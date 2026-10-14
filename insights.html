@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Evidence and Insights by Erick Omondi. Research and perspectives on data analytics, business intelligence, predictive modelling and professional research.">
+    <meta name="author" content="Erick Omondi">
+    <title>Evidence &amp; Insights | Erick Omondi</title>
+
+    <style>
+        :root {
+            --navy: #101e2c;
+            --navy-light: #21364a;
+            --teal: #397e83;
+            --text: #253747;
+            --muted: #657687;
+            --paper: #f5f7f8;
+            --white: #ffffff;
+            --border: #dce4e9;
+            --max: 1100px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 110px;
+        }
+
+        body {
+            margin: 0;
+            background: var(--paper);
+            color: var(--text);
+            font-family: "Segoe UI", Arial, sans-serif;
+            line-height: 1.8;
+        }
+
+        a {
+            color: var(--teal);
+            text-underline-offset: 3px;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .container {
+            width: min(92%, var(--max));
+            margin: auto;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.97);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+
+        .navigation {
+            min-height: 78px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+        }
+
+        .brand {
+            color: var(--navy);
+            font-size: 1.25rem;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .navigation-links {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+
+        .navigation-links a {
+            color: var(--navy-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .navigation-links a:hover {
+            color: var(--teal);
+        }
+
+        .navigation-links .contact-button {
+            padding: 10px 17px;
+            color: white;
+            background: var(--navy);
+            border-radius: 6px;
+        }
+
+        .blog-header {
+            background: var(--navy);
+            color: white;
+            padding: 90px 0;
+        }
+
+        .eyebrow {
+            display: block;
+            color: #a9cbca;
+            font-size: 0.78rem;
+            font-weight: 750;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+        }
+
+        .blog-header h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(3rem, 6vw, 5.1rem);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -1.8px;
+            margin: 20px 0;
+        }
+
+        .blog-header p {
+            max-width: 760px;
+            color: #d0dbe3;
+            font-size: 1.15rem;
+        }
+
+        .author-line {
+            color: #b4c8d3;
+            font-size: 0.9rem;
+            margin-top: 24px;
+        }
+
+        .introduction {
+            padding: 70px 0 35px;
+        }
+
+        .section-heading {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2rem, 3.5vw, 2.8rem);
+            font-weight: 400;
+            line-height: 1.25;
+            color: var(--navy);
+        }
+
+        .section-description {
+            max-width: 750px;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .article-directory {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+            padding: 20px 0 60px;
+        }
+
+        .directory-card {
+            padding: 28px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: var(--white);
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .directory-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(16, 30, 44, 0.08);
+        }
+
+        .directory-number {
+            color: var(--teal);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .directory-card h3 {
+            color: var(--navy);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.45rem;
+            line-height: 1.3;
+            font-weight: 400;
+            margin: 16px 0;
+        }
+
+        .directory-card p {
+            color: var(--muted);
+            font-size: 0.91rem;
+            margin: 0;
+        }
+
+        .article {
+            overflow: hidden;
+            margin-bottom: 55px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 12px 40px rgba(16, 30, 44, 0.05);
+        }
+
+        .article-image {
+            width: 100%;
+            height: 420px;
+            object-fit: cover;
+        }
+
+        .image-credit {
+            padding: 8px 24px;
+            background: #f8fafb;
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .image-credit a {
+            color: var(--muted);
+        }
+
+        .article-content {
+            max-width: 860px;
+            margin: auto;
+            padding: 50px 55px 65px;
+        }
+
+        .article-category {
+            color: var(--teal);
+            font-size: 0.78rem;
+            font-weight: 750;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .article-title {
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--navy);
+            font-size: clamp(2.1rem, 4vw, 3.2rem);
+            font-weight: 400;
+            line-height: 1.2;
+            letter-spacing: -1px;
+            margin: 20px 0;
+        }
+
+        .article-summary {
+            color: #4d6274;
+            font-size: 1.2rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .article-meta {
+            color: var(--muted);
+            font-size: 0.85rem;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        .article-content p {
+            margin: 19px 0;
+        }
+
+        .article-content h3 {
+            color: var(--navy);
+            font-size: 1.35rem;
+            line-height: 1.4;
+            margin-top: 38px;
+            margin-bottom: 14px;
+        }
+
+        .article-content ul {
+            padding-left: 23px;
+        }
+
+        .article-content li {
+            margin-bottom: 12px;
+        }
+
+        .insight-quote {
+            margin: 34px 0;
+            padding: 20px 28px;
+            background: #edf4f3;
+            border-left: 3px solid var(--teal);
+            color: #294c50;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        .insight-box {
+            margin-top: 35px;
+            padding: 24px;
+            border-radius: 7px;
+            background: var(--paper);
+            border: 1px solid var(--border);
+        }
+
+        .insight-box strong {
+            color: var(--navy);
+        }
+
+        .references {
+            margin-top: 45px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        .references h3 {
+            margin-top: 0;
+            font-size: 1.15rem;
+        }
+
+        .references ol {
+            padding-left: 22px;
+        }
+
+        .references li {
+            font-size: 0.91rem;
+            margin-bottom: 12px;
+        }
+
+        .research-note {
+            color: var(--muted);
+            font-size: 0.87rem;
+            margin-top: 18px;
+        }
+
+        .contact-section {
+            padding: 75px 0;
+            background: var(--navy);
+            color: white;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 400;
+            margin: 15px 0;
+        }
+
+        .contact-section p {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: #c8d6df;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.93rem;
+            text-decoration: none;
+        }
+
+        .button-primary {
+            color: var(--navy);
+            background: white;
+        }
+
+        .button-outline {
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+        }
+
+        .site-footer {
+            padding: 27px 0;
+            background: #0b1723;
+            color: #adbeca;
+            font-size: 0.85rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .site-footer a {
+            color: #d7e5e9;
+        }
+
+        @media (max-width: 850px) {
+            .article-directory {
+                grid-template-columns: 1fr;
+            }
+
+            .article-image {
+                height: 320px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .navigation {
+                flex-direction: column;
+                padding: 18px 0;
+            }
+
+            .navigation-links {
+                justify-content: center;
+                gap: 16px;
+            }
+
+            .blog-header {
+                padding: 60px 0;
+            }
+
+            .article-content {
+                padding: 32px 24px 45px;
+            }
+
+            .article-image {
+                height: 240px;
+            }
+
+            .introduction {
+                padding-top: 50px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            .directory-card {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container navigation">
+            <a href="index.html" class="brand">
+                Erick Omondi
+            </a>
+
+            <nav class="navigation-links" aria-label="Main navigation">
+                <a href="index.html">Home</a>
+                <a href="index.html#projects">Portfolio</a>
+                <a href="index.html#services">Services</a>
+                <a href="index.html#contact" class="contact-button">
+                    Contact Me
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+
+        <section class="blog-header">
+            <div class="container">
+                <span class="eyebrow">
+                    Analytics | Research | Professional Perspectives
+                </span>
+
+                <h1>Evidence &amp; Insights</h1>
+
+                <p>
+                    Exploring the ideas, methods and decisions that make
+                    data analysis meaningful. Research informed perspectives
+                    on business intelligence, predictive analytics,
+                    statistical reasoning and professional reporting.
+                </p>
+
+                <div class="author-line">
+                    Written by Erick Omondi | Data Analyst, Researcher
+                    and Analytics Consultant
+                </div>
+            </div>
+        </section>
+
+        <section class="introduction">
+            <div class="container">
+                <span class="eyebrow">Research Journal</span>
+
+                <h2 class="section-heading">
+                    Thoughtful analysis begins with better questions.
+                </h2>
+
+                <p class="section-description">
+                    Evidence &amp; Insights explores how information becomes
+                    useful knowledge. These articles examine the practical
+                    challenges of interpreting business data, designing
+                    reliable predictive models and producing research
+                    that supports responsible decisions.
+                </p>
+            </div>
+        </section>
+
+        <div class="container">
+            <nav class="article-directory" aria-label="Article directory">
+
+                <a href="#decision" class="directory-card">
+                    <span class="directory-number">ARTICLE 01</span>
+                    <h3>The Decision Before the Dashboard</h3>
+                    <p>
+                        Why the most valuable analytics work begins
+                        with understanding the decision rather than
+                        selecting a visualisation.
+                    </p>
+                </a>
+
+                <a href="#forecasts" class="directory-card">
+                    <span class="directory-number">ARTICLE 02</span>
+                    <h3>Forecasts Are Not Promises</h3>
+                    <p>
+                        Understanding model reliability, data leakage,
+                        uncertainty and responsible business forecasting.
+                    </p>
+                </a>
+
+                <a href="#research" class="directory-card">
+                    <span class="directory-number">ARTICLE 03</span>
+                    <h3>Research That Stands Up to Questions</h3>
+                    <p>
+                        How clear methodology, credible sources
+                        and careful interpretation strengthen
+                        professional research.
+                    </p>
+                </a>
+
+            </nav>
+        </div>
+
+        <div class="container">
+
+            <!-- ARTICLE ONE -->
+
+            <article id="decision" class="article">
+
+                <img class="article-image"
+                    src="https://images.unsplash.com/photo-1770681381576-f1fdceb2ea01?auto=format&amp;fit=crop&amp;w=1600&amp;q=82"
+                    alt="Laptop showing analytical charts beside a notebook and coffee mug">
+
+                <div class="image-credit">
+                    Photography:
+                    <a href="https://unsplash.com/photos/laptop-displaying-charts-next-to-notebook-and-mug-adFE-OdO7RA"
+                        target="_blank" rel="noopener noreferrer">
+                        nicoll camacho, Unsplash
+                    </a>
+                </div>
+
+                <div class="article-content">
+
+                    <span class="article-category">
+                        Business Intelligence | Analytics Strategy
+                    </span>
+
+                    <h2 class="article-title">
+                        The Decision Before the Dashboard
+                    </h2>
+
+                    <p class="article-summary">
+                        Businesses increasingly have access to sophisticated
+                        dashboards, automated reports and analytical tools.
+                        Yet access to more information does not automatically
+                        produce better decisions. The real value of analytics
+                        begins with asking the right questions.
+                    </p>
+
+                    <div class="article-meta">
+                        By Erick Omondi | October 2026
+                    </div>
+
+                    <p>
+                        A business can monitor hundreds of indicators
+                        and still struggle to understand what requires
+                        attention. Revenue may be growing while profitability
+                        declines. Customer registrations may increase while
+                        retention weakens. A dashboard can display these
+                        patterns, but identifying their significance requires
+                        interpretation, context and a clearly defined
+                        business objective.
+                    </p>
+
+                    <p>
+                        This is why effective analytical work begins before
+                        the first chart is created. The analyst must
+                        understand the question that the organisation
+                        wants answered, the information available
+                        and the decisions that may follow.
+                    </p>
+
+                    <h3>Start with the problem, not the software</h3>
+
+                    <p>
+                        Consider a retailer requesting an analysis of
+                        declining sales. A conventional response might
+                        compare monthly revenue, calculate growth rates
+                        and identify products with weaker performance.
+                        These activities are useful, but they are only
+                        the beginning.
+                    </p>
+
+                    <p>
+                        A more rigorous investigation would examine
+                        whether the decline affects particular locations,
+                        customer groups or product categories. It would
+                        consider changes in pricing, stock availability,
+                        returns and seasonal demand. It would also ask
+                        whether the apparent decline reflects genuine
+                        business conditions or changes in how transactions
+                        were recorded.
+                    </p>
+
+                    <p>
+                        Each of these questions changes the analytical
+                        approach. More importantly, each leads to
+                        different potential recommendations.
+                    </p>
+
+                    <div class="insight-quote">
+                        The purpose of analytics is not simply to
+                        describe information. It is to make the
+                        information useful for a decision.
+                    </div>
+
+                    <h3>Reliable data is the foundation of useful insight</h3>
+
+                    <p>
+                        Data quality is frequently misunderstood as
+                        a technical concern that can be resolved
+                        through routine cleaning. In reality,
+                        quality directly influences the credibility
+                        of every conclusion.
+                    </p>
+
+                    <p>
+                        The United Kingdom Government Data Quality
+                        Framework identifies six important dimensions:
+                        completeness, uniqueness, consistency,
+                        timeliness, validity and accuracy.
+                        These dimensions help organisations assess
+                        whether available information is suitable
+                        for its intended purpose.
+                    </p>
+
+                    <p>
+                        For example, a transaction dataset may contain
+                        every required field but still include duplicate
+                        orders. Customer records may follow the correct
+                        format but contain outdated information.
+                        A dataset can therefore appear complete
+                        without being sufficiently accurate for
+                        the decision under consideration.
+                    </p>
+
+                    <p>
+                        The analyst must examine these limitations,
+                        document significant findings and communicate
+                        any uncertainty that could affect the interpretation
+                        of the results.
+                    </p>
+
+                    <h3>Context gives numbers their meaning</h3>
+
+                    <p>
+                        A reported increase in customer complaints
+                        may initially suggest worsening service.
+                        However, the interpretation could change
+                        if the business experienced substantial
+                        customer growth during the same period.
+                    </p>
+
+                    <p>
+                        The number of complaints matters, but so does
+                        the number of customers served, the severity
+                        of the issues and whether reporting procedures
+                        have changed.
+                    </p>
+
+                    <p>
+                        This illustrates why business metrics should
+                        be accompanied by relevant definitions,
+                        comparisons and explanatory information.
+                        Figures become more informative when the
+                        reader understands how they were produced
+                        and what they represent.
+                    </p>
+
+                    <h3>Good analysis ends with a useful recommendation</h3>
+
+                    <p>
+                        Analytical reports should connect findings
+                        with practical business considerations.
+                        Where possible, they should identify
+                        which problems require immediate attention,
+                        which opportunities warrant investigation
+                        and which conclusions remain uncertain.
+                    </p>
+
+                    <p>
+                        Recommendations should also reflect the strength
+                        of the available evidence. An observed association
+                        between two variables does not automatically
+                        establish that one causes the other.
+                        Further investigation may be necessary
+                        before recommending an expensive intervention.
+                    </p>
+
+                    <p>
+                        Ultimately, an effective dashboard is not
+                        defined by its visual complexity.
+                        It is defined by whether it helps the intended
+                        audience understand performance, evaluate
+                        alternatives and make informed decisions.
+                    </p>
+
+                    <div class="insight-box">
+                        <strong>Practical takeaway</strong>
+                        <p>
+                            Before beginning an analytics assignment,
+                            establish the decision to be supported,
+                            define the necessary measures, assess
+                            the quality of the available data
+                            and agree on what a useful result
+                            should look like.
+                        </p>
+                    </div>
+
+                    <div class="references">
+                        <h3>Research References</h3>
+
+                        <ol>
+                            <li>
+                                <a href="https://www.gov.uk/government/publications/the-government-data-quality-framework/the-government-data-quality-framework"
+                                    target="_blank" rel="noopener noreferrer">
+                                    UK Government, Government Data Quality Framework
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="https://www.ons.gov.uk/methodology/methodologytopicsandstatisticalconcepts/qualityinofficialstatistics/qualitydefined"
+                                    target="_blank" rel="noopener noreferrer">
+                                    Office for National Statistics, Quality Defined
+                                </a>
+                            </li>
+                        </ol>
+
+                        <p class="research-note">
+                            These references support the discussion
+                            of data quality and statistical interpretation.
+                            Business scenarios are illustrative.
+                        </p>
+                    </div>
+
+                </div>
+            </article>
+
+            <!-- ARTICLE TWO -->
+
+            <article id="forecasts" class="article">
+
+                <img class="article-image"
+                    src="https://images.unsplash.com/photo-1763038311036-6d18805537e5?auto=format&amp;fit=crop&amp;w=1600&amp;q=82"
+                    alt="Professional working with business performance charts on a laptop" loading="lazy">
+
+                <div class="image-credit">
+                    Photography:
+                    <a href="https://unsplash.com/photos/woman-working-on-laptop-with-charts-and-graphs-KNQUEQwTCY4"
+                        target="_blank" rel="noopener noreferrer">
+                        Apex Virtual Education, Unsplash
+                    </a>
+                </div>
+
+                <div class="article-content">
+
+                    <span class="article-category">
+                        Predictive Analytics | Machine Learning
+                    </span>
+
+                    <h2 class="article-title">
+                        Forecasts Are Not Promises
+                    </h2>
+
+                    <p class="article-summary">
+                        Predictive analytics offers powerful opportunities
+                        for planning and decision making. However,
+                        an accurate looking prediction is not necessarily
+                        a reliable prediction. Understanding uncertainty
+                        is essential to using forecasting responsibly.
+                    </p>
+
+                    <div class="article-meta">
+                        By Erick Omondi | October 2026
+                    </div>
+
+                    <p>
+                        Businesses use forecasts to estimate demand,
+                        anticipate revenue, manage inventory and plan
+                        operational resources. When these predictions
+                        are credible, they support more informed
+                        preparation for future conditions.
+                    </p>
+
+                    <p>
+                        Problems arise when forecasts are treated
+                        as guaranteed outcomes rather than estimates.
+                        A model may produce a precise numerical prediction,
+                        but that precision does not eliminate uncertainty.
+                    </p>
+
+                    <h3>Historical patterns do not guarantee future outcomes</h3>
+
+                    <p>
+                        Predictive models learn relationships from
+                        historical information. Those relationships
+                        may continue into the future, but they may
+                        also change because of shifts in consumer
+                        behaviour, economic conditions, competition
+                        or operational practices.
+                    </p>
+
+                    <p>
+                        Consider a retailer using previous sales
+                        to estimate future demand. Historical patterns
+                        may help identify seasonal increases and
+                        recurring customer behaviour. However,
+                        unexpected supply disruptions or changes
+                        in pricing can reduce the reliability
+                        of those predictions.
+                    </p>
+
+                    <p>
+                        A credible forecast should therefore be
+                        understood as an estimate based on available
+                        evidence and stated assumptions.
+                    </p>
+
+                    <h3>Model evaluation must respect time</h3>
+
+                    <p>
+                        The method used to evaluate a forecasting
+                        model is as important as the algorithm.
+                        In many forecasting problems, a randomly
+                        divided dataset can produce misleading results
+                        because information from later periods
+                        may influence the training process.
+                    </p>
+
+                    <p>
+                        For this reason, chronological evaluation
+                        is often more appropriate. The model learns
+                        from earlier observations and is tested
+                        on later observations that simulate
+                        future conditions.
+                    </p>
+
+                    <p>
+                        Scikit learn provides a TimeSeriesSplit
+                        method designed for sequential data.
+                        Its documentation explains why ordinary
+                        cross validation may be unsuitable when
+                        observations have a meaningful time order.
+                    </p>
+
+                    <div class="insight-quote">
+                        A model should demonstrate its usefulness
+                        on information it could not access
+                        during training.
+                    </div>
+
+                    <h3>Data leakage can create false confidence</h3>
+
+                    <p>
+                        Data leakage occurs when information that
+                        would not be available at the time of
+                        prediction influences the development
+                        or evaluation of a model.
+                    </p>
+
+                    <p>
+                        This problem can arise through inappropriate
+                        feature construction, incorrect separation
+                        of training and testing data or preprocessing
+                        procedures that use information from
+                        the entire dataset.
+                    </p>
+
+                    <p>
+                        A model affected by leakage may appear
+                        exceptionally accurate during evaluation
+                        but perform poorly when applied to
+                        genuinely new observations.
+                    </p>
+
+                    <p>
+                        Reliable modelling requires careful separation
+                        of training and testing information,
+                        appropriate feature engineering and
+                        evaluation procedures that reflect
+                        how the model will actually be used.
+                    </p>
+
+                    <h3>Accuracy should be meaningful to the business</h3>
+
+                    <p>
+                        Model performance is often reported through
+                        measures such as mean absolute error
+                        and root mean squared error.
+                        These measures describe different aspects
+                        of prediction error, but neither automatically
+                        determines whether a forecast is useful.
+                    </p>
+
+                    <p>
+                        A prediction error that seems small in one
+                        context may have substantial consequences
+                        in another.
+                    </p>
+
+                    <p>
+                        For an inventory manager, underestimating
+                        demand may result in missed sales.
+                        Overestimating demand may increase storage
+                        costs and unsold stock.
+                    </p>
+
+                    <p>
+                        This means that evaluation should consider
+                        both mathematical performance and
+                        the practical consequences of incorrect
+                        predictions.
+                    </p>
+
+                    <h3>Transparency strengthens trust</h3>
+
+                    <p>
+                        The National Institute of Standards
+                        and Technology identifies validity,
+                        reliability, transparency and explainability
+                        among the important characteristics
+                        of trustworthy artificial intelligence.
+                    </p>
+
+                    <p>
+                        These principles are relevant to
+                        predictive analytics because model users
+                        need to understand the assumptions,
+                        limitations and potential risks associated
+                        with analytical outputs.
+                    </p>
+
+                    <p>
+                        A professional forecasting report should
+                        explain the prediction period, the available
+                        historical information, the evaluation
+                        method and the limitations that could
+                        influence future performance.
+                    </p>
+
+                    <p>
+                        Where uncertainty estimates are available
+                        and appropriately validated, presenting
+                        a plausible range of outcomes may be more
+                        helpful than presenting a single figure.
+                        Regular performance reviews are also important
+                        when models are used repeatedly.
+                    </p>
+
+                    <div class="insight-box">
+                        <strong>Practical takeaway</strong>
+                        <p>
+                            Evaluate forecasts using genuinely unseen
+                            periods, compare complex models with
+                            reasonable baseline methods, investigate
+                            possible data leakage and communicate
+                            the limitations of every prediction.
+                        </p>
+                    </div>
+
+                    <div class="references">
+                        <h3>Research References</h3>
+
+                        <ol>
+                            <li>
+                                <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html"
+                                    target="_blank" rel="noopener noreferrer">
+                                    Scikit learn, TimeSeriesSplit Documentation
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="https://scikit-learn.org/stable/common_pitfalls.html" target="_blank"
+                                    rel="noopener noreferrer">
+                                    Scikit learn, Common Pitfalls and Recommended Practices
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="https://airc.nist.gov/airmf-resources/airmf/3-sec-characteristics/"
+                                    target="_blank" rel="noopener noreferrer">
+                                    NIST, AI Risks and Trustworthiness
+                                </a>
+                            </li>
+                        </ol>
+                    </div>
+
+                </div>
+            </article>
+
+            <!-- ARTICLE THREE -->
+
+            <article id="research" class="article">
+
+                <img class="article-image"
+                    src="https://images.unsplash.com/photo-1746014601017-4e515ef51722?auto=format&amp;fit=crop&amp;w=1600&amp;q=82"
+                    alt="Laptop displaying business reporting charts during an analytical review" loading="lazy">
+
+                <div class="image-credit">
+                    Photography:
+                    <a href="https://unsplash.com/photos/person-reviews-charts-on-a-laptop-at-a-table-YR7r3kB8Z54"
+                        target="_blank" rel="noopener noreferrer">
+                        Swello, Unsplash
+                    </a>
+                </div>
+
+                <div class="article-content">
+
+                    <span class="article-category">
+                        Research Methodology | Professional Writing
+                    </span>
+
+                    <h2 class="article-title">
+                        Research That Stands Up to Questions
+                    </h2>
+
+                    <p class="article-summary">
+                        The credibility of professional research depends
+                        on more than convincing language. Strong research
+                        requires clear questions, appropriate methods,
+                        credible evidence and conclusions that can
+                        withstand careful examination.
+                    </p>
+
+                    <div class="article-meta">
+                        By Erick Omondi | October 2026
+                    </div>
+
+                    <p>
+                        Research is valuable when it reduces uncertainty
+                        and improves understanding. Whether the assignment
+                        involves a business problem, a market investigation
+                        or an analytical report, the objective should
+                        be to produce findings that are supported
+                        by appropriate evidence.
+                    </p>
+
+                    <p>
+                        A lengthy report may appear comprehensive,
+                        but length alone does not establish quality.
+                        A concise report with a sound methodology,
+                        reliable sources and a clear argument
+                        can be far more useful.
+                    </p>
+
+                    <h3>Every strong investigation begins with clarity</h3>
+
+                    <p>
+                        Before collecting information, the researcher
+                        must establish exactly what the assignment
+                        intends to investigate.
+                    </p>
+
+                    <p>
+                        Broad topics frequently contain several
+                        different research questions.
+                        For example, an investigation into
+                        digital transformation among small businesses
+                        could examine adoption rates, financial
+                        barriers, employee skills, operational
+                        outcomes or customer expectations.
+                    </p>
+
+                    <p>
+                        These subjects are related, but they require
+                        different evidence and analytical approaches.
+                        Clearly defining the research objective
+                        helps determine the appropriate scope,
+                        methodology and reporting structure.
+                    </p>
+
+                    <h3>Source credibility matters</h3>
+
+                    <p>
+                        Research quality depends partly on whether
+                        the sources used are appropriate to
+                        the claims being made.
+                    </p>
+
+                    <p>
+                        Official statistical publications,
+                        academic research, institutional reports
+                        and documented business records can provide
+                        valuable evidence. However, each source
+                        should be evaluated according to its purpose,
+                        methodology, relevance and limitations.
+                    </p>
+
+                    <p>
+                        Information should not be accepted simply
+                        because it appears in a professional publication.
+                        The researcher should consider who produced
+                        the evidence, how it was collected,
+                        when it was published and whether
+                        alternative explanations exist.
+                    </p>
+
+                    <p>
+                        The Office for National Statistics describes
+                        statistical quality through important
+                        considerations such as relevance,
+                        accuracy and reliability, timeliness,
+                        accessibility and clarity,
+                        and coherence and comparability.
+                    </p>
+
+                    <p>
+                        These principles also offer a useful
+                        foundation for evaluating evidence
+                        in professional research.
+                    </p>
+
+                    <div class="insight-quote">
+                        Credible research does not simply present
+                        an answer. It makes the reasoning behind
+                        that answer clear enough to examine.
+                    </div>
+
+                    <h3>Methodology connects evidence to conclusions</h3>
+
+                    <p>
+                        A professional research report should explain
+                        how information was gathered, how relevant
+                        material was selected and how findings
+                        were interpreted.
+                    </p>
+
+                    <p>
+                        In quantitative research, this may involve
+                        defining the population, reviewing sampling
+                        procedures, describing variables and
+                        explaining analytical techniques.
+                    </p>
+
+                    <p>
+                        In qualitative research, methodological clarity
+                        may require an explanation of participant
+                        selection, interview procedures, thematic
+                        interpretation and the boundaries of
+                        the available evidence.
+                    </p>
+
+                    <p>
+                        Neither approach is automatically superior.
+                        The appropriate method depends on
+                        the research question and the type
+                        of evidence needed to answer it.
+                    </p>
+
+                    <h3>Interpretation requires intellectual discipline</h3>
+
+                    <p>
+                        One of the most important responsibilities
+                        of a researcher is distinguishing between
+                        what the evidence demonstrates and
+                        what the evidence merely suggests.
+                    </p>
+
+                    <p>
+                        A statistical relationship between two
+                        variables does not necessarily establish
+                        that one causes the other.
+                        Similarly, the experiences of a small
+                        group of respondents cannot automatically
+                        represent an entire population.
+                    </p>
+
+                    <p>
+                        These limitations do not make research
+                        worthless. They define the boundaries
+                        within which findings should be interpreted.
+                    </p>
+
+                    <p>
+                        Professional integrity requires those
+                        boundaries to be communicated clearly.
+                    </p>
+
+                    <h3>Writing is part of the analytical process</h3>
+
+                    <p>
+                        Research findings have limited value
+                        if their intended audience cannot
+                        understand them.
+                    </p>
+
+                    <p>
+                        Effective analytical writing uses
+                        a logical structure, precise language
+                        and explanations that connect evidence
+                        with conclusions.
+                    </p>
+
+                    <p>
+                        An executive summary should communicate
+                        the central question, important findings,
+                        relevant limitations and practical
+                        implications without requiring readers
+                        to examine the entire report first.
+                    </p>
+
+                    <p>
+                        Charts and tables should clarify
+                        the argument rather than merely
+                        decorate the document.
+                    </p>
+
+                    <p>
+                        Recommendations should reflect
+                        the strength of the evidence
+                        and remain consistent with the
+                        original research objectives.
+                    </p>
+
+                    <h3>The value of research lies in its usefulness</h3>
+
+                    <p>
+                        A completed research assignment should
+                        help its intended audience understand
+                        a problem more clearly, evaluate
+                        available options or identify
+                        questions requiring further investigation.
+                    </p>
+
+                    <p>
+                        For a business client, this may involve
+                        interpreting market information or
+                        investigating operational performance.
+                    </p>
+
+                    <p>
+                        For an organisation, it may involve
+                        evaluating programme outcomes,
+                        identifying information gaps
+                        or developing recommendations
+                        based on available evidence.
+                    </p>
+
+                    <p>
+                        Across these contexts, the underlying
+                        expectation remains the same:
+                        research should be accurate,
+                        transparent, relevant and understandable.
+                    </p>
+
+                    <div class="insight-box">
+                        <strong>Practical takeaway</strong>
+                        <p>
+                            Strong research establishes a clear
+                            question, uses appropriate evidence,
+                            explains its methodology, acknowledges
+                            limitations and presents conclusions
+                            that follow logically from the findings.
+                        </p>
+                    </div>
+
+                    <div class="references">
+                        <h3>Research References</h3>
+
+                        <ol>
+                            <li>
+                                <a href="https://www.ons.gov.uk/methodology/methodologytopicsandstatisticalconcepts/qualityinofficialstatistics/qualitydefined"
+                                    target="_blank" rel="noopener noreferrer">
+                                    Office for National Statistics, Quality Defined
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="https://www.gov.uk/government/publications/the-government-data-quality-framework/the-government-data-quality-framework"
+                                    target="_blank" rel="noopener noreferrer">
+                                    UK Government, Government Data Quality Framework
+                                </a>
+                            </li>
+                        </ol>
+                    </div>
+
+                </div>
+            </article>
+
+        </div>
+
+        <!-- CONTACT -->
+
+        <section class="contact-section">
+            <div class="container">
+
+                <span class="eyebrow">
+                    Research and Analytics Contracts
+                </span>
+
+                <h2>
+                    Have a project that needs careful analysis?
+                </h2>
+
+                <p>
+                    I accept professional research, analytical writing,
+                    data analysis, business reporting, dashboard development
+                    and analytics consulting assignments.
+                    Contact me to discuss your requirements.
+                </p>
+
+                <div class="button-group">
+
+                    <a class="button button-primary"
+                        href="mailto:brightwriters75@gmail.com?subject=Research%20or%20Data%20Analysis%20Project">
+                        Email Me
+                    </a>
+
+                    <a class="button button-outline" href="tel:+254799433213">
+                        Call Directly
+                    </a>
+
+                    <a class="button button-outline"
+                        href="https://wa.me/254799581574?text=Hello%20Erick%2C%20I%20would%20like%20to%20discuss%20a%20project."
+                        target="_blank" rel="noopener noreferrer">
+                        WhatsApp
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-content">
+
+            <span>
+                © 2026 Erick Omondi. All rights reserved.
+            </span>
+
+            <span>
+                <a href="index.html">Portfolio</a>
+                |
+                <a href="index.html#contact">Contact</a>
+            </span>
+
+        </div>
+    </footer>
+
+</body>
+
+</html>

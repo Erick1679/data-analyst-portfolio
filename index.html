@@ -1,320 +1,2013 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore Erick Omondi's portfolio of six Python data analytics and cybersecurity projects, including business intelligence, security log analysis, risk scoring, and two live dashboards.">
-  <meta name="theme-color" content="#0b1420">
-  <title>Erick Omondi | Data Analytics &amp; Security Portfolio</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="description"
+    content="Erick Omondi | Data Analyst, Researcher and Analytics Consultant. Professional data analysis, research, writing, business intelligence and predictive analytics services.">
+
+  <title>Erick Omondi | Data Analytics, Research & Consulting</title>
+
   <style>
+    /* ==========================================
+           DESIGN SYSTEM
+        ========================================== */
+
     :root {
-      --bg: #0b1420;
-      --panel: #112233;
-      --panel-soft: #14283a;
-      --line: rgba(192, 220, 228, .15);
-      --text: #eff8f7;
-      --muted: #a4b9c1;
-      --accent: #9ce7c5;
-      --orange: #f7c98b;
-      --max: 1120px;
+      --navy: #101e2c;
+      --navy-dark: #0b1723;
+      --navy-light: #21364a;
+      --slate: #4b6073;
+      --teal: #397e83;
+      --teal-light: #e5f1ef;
+      --gold: #b18c55;
+      --white: #ffffff;
+      --paper: #f5f7f8;
+      --paper-dark: #e9eef1;
+      --text: #203243;
+      --muted: #657687;
+      --border: #dce4e9;
+      --shadow: 0 12px 40px rgba(18, 36, 52, 0.08);
+      --radius: 14px;
+      --max-width: 1180px;
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
+
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 95px;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
       color: var(--text);
-      background: var(--bg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
+      background: var(--paper);
+      line-height: 1.7;
+      overflow-x: hidden;
     }
-    a { color: inherit; text-decoration: none; }
-    a:focus-visible, button:focus-visible { outline: 3px solid var(--orange); outline-offset: 5px; }
-    .wrap { width: min(calc(100% - 48px), var(--max)); margin-inline: auto; }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .container {
+      width: min(92%, var(--max-width));
+      margin: auto;
+    }
+
+    section {
+      padding: 88px 0;
+    }
+
+    .eyebrow {
+      display: block;
+      color: var(--teal);
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: clamp(1.9rem, 3vw, 2.7rem);
+      line-height: 1.2;
+      font-weight: 750;
+      margin-bottom: 20px;
+    }
+
+    .section-description {
+      color: var(--muted);
+      max-width: 730px;
+      margin-bottom: 38px;
+      font-size: 1.04rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 21px;
+      border-radius: 7px;
+      font-size: 0.93rem;
+      font-weight: 650;
+      border: 1px solid transparent;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button-primary {
+      color: white;
+      background: var(--teal);
+    }
+
+    .button-primary:hover {
+      background: #2c686d;
+    }
+
+    .button-outline {
+      color: var(--navy);
+      border-color: var(--border);
+      background: white;
+    }
+
+    .button-outline:hover {
+      background: var(--teal-light);
+    }
+
+    .button-light {
+      background: white;
+      color: var(--navy);
+    }
+
+    .button-ghost {
+      border-color: rgba(255, 255, 255, 0.4);
+      color: white;
+      background: transparent;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    /* ==========================================
+           NAVIGATION
+        ========================================== */
+
     .site-header {
-      position: sticky; top: 0; z-index: 10;
-      background: rgba(11, 20, 32, .94);
-      border-bottom: 1px solid var(--line);
-      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.97);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
     }
-    .header-inner { display: flex; align-items: center; justify-content: space-between; min-height: 76px; gap: 24px; }
-    .brand { display: inline-flex; gap: 12px; align-items: center; font-size: .9rem; font-weight: 800; letter-spacing: .025em; }
-    .brand-mark { display: grid; place-items: center; width: 39px; height: 39px; background: var(--accent); border-radius: 11px; color: #0b1c23; font-weight: 900; }
-    .nav { display: flex; align-items: center; gap: clamp(14px, 2.5vw, 32px); font-size: .9rem; color: var(--muted); }
-    .nav a:hover, .footer-links a:hover { color: var(--accent); }
-    .nav .nav-github { color: var(--text); border: 1px solid var(--line); border-radius: 100px; padding: 8px 17px; }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 79px;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.3;
+    }
+
+    .brand-name {
+      color: var(--navy);
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-description {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .nav-links a {
+      color: var(--slate);
+      font-size: 0.89rem;
+      font-weight: 600;
+    }
+
+    .nav-links a:hover {
+      color: var(--teal);
+    }
+
+    /* ==========================================
+           HERO / ONLINE ANALYTICS BACKGROUND
+        ========================================== */
+
     .hero {
       position: relative;
-      padding: 112px 0 96px;
+      isolation: isolate;
+      color: white;
+      padding: 105px 0 115px;
+      background-color: var(--navy-dark);
+      background-image:
+        linear-gradient(90deg,
+          rgba(10, 23, 35, 0.97) 0%,
+          rgba(13, 32, 47, 0.92) 55%,
+          rgba(15, 40, 55, 0.72) 100%),
+        url("https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=2000&q=85");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+      background-size: 55px 55px;
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 70px;
+      align-items: center;
+    }
+
+    .hero-label {
+      color: #aaccca;
+      font-weight: 700;
+      letter-spacing: 1.7px;
+      text-transform: uppercase;
+      font-size: 0.76rem;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 5vw, 4.8rem);
+      line-height: 1.11;
+      letter-spacing: -1.6px;
+      font-weight: 750;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 span {
+      color: #a8ccc9;
+    }
+
+    .hero-description {
+      max-width: 630px;
+      color: #d3dfe5;
+      font-size: 1.1rem;
+    }
+
+    .availability {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 26px;
+      color: #d1e3dd;
+      font-size: 0.9rem;
+    }
+
+    .availability::before {
+      content: "";
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #91c6ad;
+    }
+
+    /* ==========================================
+           ANALYTICS HERO VISUAL
+        ========================================== */
+
+    .hero-visual {
+      position: relative;
+      background: rgba(17, 37, 52, 0.82);
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, .22);
+    }
+
+    .visual-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #cddbe2;
+      font-size: 0.82rem;
+      margin-bottom: 20px;
+    }
+
+    .visual-heading strong {
+      color: #a9c9c8;
+      font-size: 0.74rem;
+    }
+
+    .chart-graphic {
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .chart-line {
+      stroke-dasharray: 650;
+      stroke-dashoffset: 650;
+      animation: drawLine 4s ease forwards;
+    }
+
+    .chart-dot {
+      animation: chartPulse 3s ease-in-out infinite;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+
+    @keyframes drawLine {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes chartPulse {
+      50% {
+        opacity: 0.55;
+        transform: scale(1.22);
+      }
+    }
+
+    .visual-footer {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, .12);
+      padding-top: 20px;
+      margin-top: 12px;
+    }
+
+    .visual-footer strong {
+      display: block;
+      font-size: 1.25rem;
+      color: white;
+    }
+
+    .visual-footer span {
+      font-size: 0.7rem;
+      color: #b8cbd5;
+    }
+
+    /* ==========================================
+           PORTFOLIO STATS
+        ========================================== */
+
+    .stats-section {
+      background: white;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .stat {
+      padding: 15px 20px;
+      border-left: 2px solid var(--teal);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.8rem;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .stat span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .stats-note {
+      margin-top: 17px;
+      color: var(--muted);
+      font-size: 0.77rem;
+    }
+
+    /* ==========================================
+           PERSONAL PROFILE BANNER
+        ========================================== */
+
+    .profile-section {
+      background: white;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 55px;
+      align-items: center;
+    }
+
+    .profile-image {
       overflow: hidden;
-      background: radial-gradient(ellipse 75% 95% at 95% 15%, rgba(50, 126, 117, .21), transparent 68%),
-                  radial-gradient(ellipse 45% 50% at 0% 100%, rgba(76, 103, 146, .11), transparent 80%);
+      border-radius: var(--radius);
+      background: var(--navy);
+      box-shadow: var(--shadow);
     }
-    .hero-grid { display: grid; grid-template-columns: 1.14fr .86fr; align-items: center; gap: 74px; }
-    .eyebrow { color: var(--accent); font-size: .77rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
-    h1, h2, h3, p { margin-top: 0; }
-    h1 { font-size: clamp(3.1rem, 6.2vw, 5.4rem); line-height: 1.09; letter-spacing: -.058em; margin: 20px 0 24px; }
-    .gradient-text { color: var(--accent); }
-    .hero-copy { color: var(--muted); max-width: 580px; font-size: 1.13rem; }
-    .actions { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 30px; }
-    .button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 49px; padding: 11px 20px; border-radius: 11px; font-size: .91rem; font-weight: 750; transition: transform .18s, background .18s; }
-    .button:hover { transform: translateY(-2px); }
-    .button-primary { color: #072226; background: var(--accent); }
-    .button-primary:hover { background: #b6f4d8; }
-    .button-secondary { border: 1px solid rgba(210, 237, 238, .24); color: var(--text); background: rgba(255,255,255,.035); }
-    .hero-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--muted); margin-top: 32px; font-size: .85rem; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px rgba(156,231,197,.1); }
-    .preview { background: linear-gradient(150deg, #173244, #101e2d 80%); border: 1px solid rgba(183,226,214,.25); box-shadow: 0 30px 85px rgba(0,0,0,.26); border-radius: 23px; overflow: hidden; transform: rotate(1.5deg); }
-    .preview-top { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 18px 22px; }
-    .window-dots { display: inline-flex; gap: 6px; }
-    .window-dots i { width: 8px; height: 8px; border-radius: 50%; background: #63818d; }
-    .window-dots i:first-child { background: var(--orange); }
-    .preview-top span:last-child { color: var(--muted); font-size: .74rem; }
-    .preview-body { padding: 26px; }
-    .mini-label { color: var(--muted); letter-spacing: .09em; text-transform: uppercase; font-size: .72rem; font-weight: 800; }
-    .revenue { font-size: 3.6rem; font-weight: 850; letter-spacing: -.055em; line-height: 1.25; margin: 4px 0 8px; }
-    .mini-pill { display: inline-block; color: var(--accent); background: rgba(156,231,197,.09); padding: 3px 9px; border-radius: 100px; font-size: .72rem; }
-    .mini-divider { border-top: 1px solid var(--line); margin: 26px 0 18px; }
-    .segment-row { display: grid; grid-template-columns: 104px 1fr 20px; gap: 11px; align-items: center; margin: 13px 0; font-size: .79rem; color: #c6dadd; }
-    .segment-track { height: 9px; border-radius: 100px; overflow: hidden; background: #294458; }
-    .segment-fill { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
-    .segment-fill.recent { background: #f7c98b; }
-    .segment-fill.attention { background: #83addd; }
-    .mini-foot { color: #92aeb7; font-size: .72rem; margin: 21px 0 0; }
-    .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 15px; overflow: hidden; background: rgba(255,255,255,.025); margin-top: 68px; }
-    .stat { padding: 24px 26px; border-right: 1px solid var(--line); }
-    .stat:last-child { border-right: 0; }
-    .stat strong { display: block; font-size: 1.65rem; line-height: 1.2; letter-spacing: -.035em; }
-    .stat span { display: block; color: var(--muted); font-size: .8rem; margin-top: 6px; }
-    section { scroll-margin-top: 92px; }
-    .section { padding: 90px 0; }
-    .section-alt { background: #0e1b2a; border-block: 1px solid var(--line); }
-    .section-heading { max-width: 700px; margin-bottom: 35px; }
-    .section-heading h2 { font-size: clamp(2rem, 3.5vw, 3rem); line-height: 1.17; letter-spacing: -.04em; margin: 12px 0 12px; }
-    .section-heading p { color: var(--muted); font-size: 1rem; margin: 0; }
-    .projects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .project { display: flex; flex-direction: column; border: 1px solid var(--line); background: #132334; border-radius: 17px; padding: 27px; min-height: 304px; transition: transform .2s, border-color .2s; }
-    .project:hover { transform: translateY(-4px); border-color: rgba(156,231,197,.45); }
-    .project-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
-    .project-number { font-size: .8rem; font-weight: 800; letter-spacing: .12em; color: var(--accent); }
-    .project-label { font-size: .7rem; border: 1px solid rgba(156,231,197,.35); border-radius: 100px; color: var(--accent); padding: 3px 9px; }
-    .project h3 { font-size: 1.37rem; letter-spacing: -.025em; line-height: 1.3; margin: 26px 0 10px; }
-    .project p { color: var(--muted); font-size: .92rem; margin-bottom: 22px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; }
-    .tags span { color: #c5d9dd; font-size: .73rem; background: #1c3746; border-radius: 6px; padding: 5px 9px; }
-    .project-links { display: flex; gap: 20px; margin-top: 24px; flex-wrap: wrap; }
-    .project-links a { color: var(--accent); font-weight: 750; font-size: .84rem; }
-    .project-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
-    .skills-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 50px; align-items: start; }
-    .skill-group { border-bottom: 1px solid var(--line); padding: 18px 0; }
-    .skill-group:first-child { padding-top: 0; }
-    .skill-group h3 { font-size: .93rem; margin-bottom: 11px; color: var(--accent); }
-    .skill-group p { color: var(--muted); font-size: .96rem; margin: 0; }
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
-    .about-grid p { color: var(--muted); }
-    .about-card { background: linear-gradient(140deg, #193644, #152738); border: 1px solid var(--line); padding: 33px; border-radius: 18px; }
-    .about-card .quote { font-size: 1.32rem; font-weight: 650; line-height: 1.5; color: #e5f7ee; margin: 0; }
-    .about-card small { display: block; color: var(--muted); margin-top: 20px; }
-    .contact { text-align: center; padding: 80px 24px; border-radius: 23px; background: radial-gradient(ellipse at 50% 0%, rgba(156,231,197,.12), transparent 60%), #122a37; border: 1px solid rgba(156,231,197,.2); }
-    .contact h2 { font-size: clamp(2rem, 3.8vw, 3.1rem); line-height: 1.2; letter-spacing: -.04em; margin: 13px 0; }
-    .contact p { margin: 0 auto 24px; color: var(--muted); max-width: 580px; }
-    .site-footer { border-top: 1px solid var(--line); padding: 27px 0; }
-    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
-    .footer-links { display: flex; gap: 22px; }
-    @media (max-width: 920px) {
-      .hero-grid { gap: 34px; }
-      .hero { padding-top: 80px; }
-      .revenue { font-size: 2.8rem; }
-      .segment-row { grid-template-columns: 94px 1fr 18px; }
-      .stat { padding: 18px; }
+
+    .profile-image img {
+      width: 100%;
+      height: auto;
     }
-    @media (max-width: 720px) {
-      .wrap { width: min(calc(100% - 32px), var(--max)); }
-      .header-inner { min-height: 67px; flex-wrap: wrap; padding: 12px 0; }
-      .nav { justify-content: space-between; width: 100%; font-size: .81rem; gap: 9px; }
-      .nav .nav-github { padding: 6px 11px; }
-      .hero { padding: 66px 0 60px; }
-      .hero-grid, .skills-layout, .about-grid { grid-template-columns: 1fr; gap: 34px; }
-      .preview { transform: none; max-width: 520px; }
-      .stat-strip { grid-template-columns: repeat(2, 1fr); margin-top: 42px; }
-      .stat:nth-child(2) { border-right: 0; }
-      .stat:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
-      .projects { grid-template-columns: 1fr; }
-      .section { padding: 66px 0; }
-      .project { min-height: unset; }
+
+    .profile-text p {
+      color: var(--muted);
+      margin-bottom: 17px;
     }
+
+    .profile-specialties {
+      margin-top: 22px;
+      padding-left: 20px;
+      color: var(--slate);
+    }
+
+    .profile-specialties li {
+      margin-bottom: 7px;
+    }
+
+    /* ==========================================
+           PROFESSIONAL SERVICES
+        ========================================== */
+
+    .services-section {
+      background: var(--paper);
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .service-card {
+      background: white;
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .service-number {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--teal);
+      margin-bottom: 20px;
+    }
+
+    .service-card h3 {
+      color: var(--navy);
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+    }
+
+    .service-card p {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    /* ==========================================
+           PROJECTS
+        ========================================== */
+
+    .projects-section {
+      background: white;
+    }
+
+    .featured-project {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      background: var(--navy);
+      border-radius: var(--radius);
+      overflow: hidden;
+      color: white;
+      margin-bottom: 28px;
+    }
+
+    .featured-content {
+      padding: 42px;
+    }
+
+    .featured-label {
+      color: #a7d0ca;
+      font-size: 0.75rem;
+      font-weight: 750;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .featured-content h3 {
+      font-size: 1.8rem;
+      line-height: 1.3;
+      margin: 18px 0;
+    }
+
+    .featured-content p {
+      color: #c9d5df;
+    }
+
+    .featured-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1b2c3c;
+      padding: 25px;
+    }
+
+    .featured-image img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .15);
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .project-card {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: white;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .project-category {
+      color: var(--teal);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      font-weight: 800;
+    }
+
+    .project-card h3 {
+      margin: 15px 0;
+      color: var(--navy);
+      font-size: 1.2rem;
+    }
+
+    .project-card p {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 20px;
+    }
+
+    .project-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: var(--teal);
+      font-weight: 750;
+      font-size: .9rem;
+    }
+
+    /* ==========================================
+           DASHBOARD GALLERY
+        ========================================== */
+
+    .gallery-section {
+      background: var(--paper);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .gallery-card {
+      background: white;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .gallery-card img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      object-position: top;
+      transition: transform .3s;
+    }
+
+    .gallery-card:hover img {
+      transform: scale(1.03);
+    }
+
+    .gallery-card div {
+      padding: 18px;
+      font-weight: 650;
+      color: var(--navy);
+    }
+
+    /* ==========================================
+           ABOUT / TECHNOLOGY
+        ========================================== */
+
+    .about-section {
+      background: white;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 65px;
+    }
+
+    .about-grid p {
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .skill {
+      background: var(--teal-light);
+      color: #315c60;
+      padding: 8px 13px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+
+    /* ==========================================
+           CONTACT
+        ========================================== */
+
+    .contact-section {
+      background: var(--navy);
+      color: white;
+    }
+
+    .contact-section .eyebrow {
+      color: #add5d1;
+    }
+
+    .contact-intro {
+      color: #c9d6df;
+      max-width: 750px;
+      margin-bottom: 35px;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .contact-card {
+      padding: 27px;
+      background: rgba(255, 255, 255, .045);
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 10px;
+    }
+
+    .contact-card span {
+      display: block;
+      color: #adc1cf;
+      font-size: .84rem;
+      margin-bottom: 12px;
+    }
+
+    .contact-card a {
+      color: white;
+      font-size: 1rem;
+      font-weight: 650;
+      overflow-wrap: anywhere;
+    }
+
+    .contact-card a:hover {
+      color: #a7d4cd;
+    }
+
+    /* ==========================================
+           FOOTER
+        ========================================== */
+
+    footer {
+      background: var(--navy-dark);
+      padding: 27px 0;
+      color: #bdcbd6;
+      font-size: 0.83rem;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    /* ==========================================
+           RESPONSIVE DESIGN
+        ========================================== */
+
+    @media (max-width: 1000px) {
+
+      .hero-grid,
+      .profile-grid,
+      .featured-project,
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .services-grid,
+      .project-grid,
+      .gallery-grid,
+      .contact-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .hero-grid {
+        gap: 45px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      section {
+        padding: 65px 0;
+      }
+
+      .nav-container {
+        flex-direction: column;
+        padding: 17px 0;
+      }
+
+      .nav-links {
+        gap: 13px;
+        justify-content: center;
+      }
+
+      .hero {
+        padding: 70px 0;
+      }
+
+      .services-grid,
+      .project-grid,
+      .gallery-grid,
+      .contact-grid,
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .featured-content {
+        padding: 28px;
+      }
+
+      .stat {
+        border-left: 2px solid var(--teal);
+      }
+
+      .contact-card {
+        padding: 22px;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after { transition: none !important; }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
     }
-  </style>
+
+    /* ==========================================
+   PROFESSIONAL PROFILE BANNER — IMAGE FIX
+========================================== */
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 35px;
+      align-items: start;
+    }
+
+    .profile-image {
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      background: var(--navy);
+      box-shadow: var(--shadow);
+    }
+
+    .profile-image img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: auto;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .profile-text {
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 700px) {
+      .profile-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 25px;
+      }
+
+      .profile-image {
+        border-radius: 8px;
+      }
+    }
+  
+        /* INSIGHTS AND RESEARCH */
+
+        .insights-section {
+            background: var(--paper);
+            border-top: 1px solid var(--border);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+            margin-top: 36px;
+        }
+
+        .insights-card {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .insights-card img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+        }
+
+        .insights-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 26px;
+        }
+
+        .insights-category {
+            color: var(--teal);
+            font-size: 0.74rem;
+            font-weight: 750;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .insights-content h3 {
+            color: var(--navy);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.48rem;
+            font-weight: 400;
+            line-height: 1.35;
+            margin: 15px 0;
+        }
+
+        .insights-content p {
+            color: var(--muted);
+            font-size: 0.94rem;
+            margin-bottom: 23px;
+        }
+
+        .insights-read {
+            margin-top: auto;
+            color: var(--teal);
+            font-size: 0.9rem;
+            font-weight: 750;
+            text-decoration: none;
+        }
+
+        .insights-read:hover {
+            text-decoration: underline;
+        }
+
+        .insights-credit {
+            padding: 9px 26px 18px;
+            color: var(--muted);
+            font-size: 0.73rem;
+        }
+
+        .insights-credit a {
+            color: var(--muted);
+        }
+
+        .insights-actions {
+            margin-top: 32px;
+        }
+
+        @media (max-width: 950px) {
+            .insights-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    
+        /* PROJECT BOOKING SECTION */
+
+        .booking-section {
+            padding: 90px 0;
+            background: #edf2f3;
+            border-top: 1px solid var(--border);
+        }
+
+        .booking-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 45px;
+            align-items: start;
+        }
+
+        .booking-description {
+            color: var(--muted);
+            font-size: 1.05rem;
+            margin-bottom: 25px;
+        }
+
+        .booking-details {
+            padding: 25px;
+            border-left: 3px solid var(--teal);
+            background: white;
+            border-radius: 6px;
+        }
+
+        .booking-details h3 {
+            color: var(--navy);
+            margin-bottom: 14px;
+        }
+
+        .booking-details p {
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .booking-form {
+            background: white;
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .booking-form iframe {
+            display: block;
+            width: 100%;
+            min-height: 800px;
+            border: 0;
+            background: white;
+        }
+
+        .booking-fallback {
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .booking-fallback a {
+            color: var(--teal);
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .booking-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .booking-section {
+                padding: 60px 0;
+            }
+
+            .booking-form {
+                padding: 12px;
+            }
+        }
+
+    </style>
 </head>
+
 <body>
+
+  <!-- ==========================================
+         HEADER
+    ========================================== -->
+
   <header class="site-header">
-    <div class="wrap header-inner">
-      <a class="brand" href="#home" aria-label="Erick Omondi, back to top"><span class="brand-mark">EM</span><span>Erick Omondi</span></a>
-      <nav class="nav" aria-label="Main navigation">
-        <a href="#projects">Projects</a>
-        <a href="#skills">Skills</a>
+    <div class="container nav-container">
+
+      <a href="#home" class="brand">
+        <span class="brand-name">Erick Omondi</span>
+        <span class="brand-description">Analytics · Research · Consulting</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
         <a href="#about">About</a>
-        <a class="nav-github" href="https://github.com/Erick1679" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+        <a href="#services">Services</a>
+        <a href="#projects">Projects</a>
+        <a href="#gallery">Dashboards</a>
+        <a href="#insights">Insights</a>
+                <a href="#booking">Book a Project</a>
+                <a href="#contact">Contact</a>
       </nav>
+
     </div>
   </header>
 
   <main>
-    <section class="hero" id="home">
-      <div class="wrap">
-        <div class="hero-grid">
-          <div>
-            <div class="eyebrow">Data analytics · Business intelligence · Security intelligence</div>
-            <h1>From raw data to <span class="gradient-text">clear decisions.</span></h1>
-            <p class="hero-copy">I'm Erick Omondi. I turn complex data into practical insights through Python, statistical analysis, and interactive dashboards. My portfolio spans business intelligence, customer analytics, and explainable security monitoring.</p>
-            <div class="actions">
-              <a class="button button-primary" href="#projects">Explore my projects <span aria-hidden="true">↘</span></a>
-              <a class="button button-secondary" href="https://business-intelligence-dashboard-ezx2j4jrjmckjbdvd6uzkz.streamlit.app/" target="_blank" rel="noopener noreferrer">Explore live business dashboard ↗</a>
-            </div>
-            <div class="hero-meta"><span class="status-dot" aria-hidden="true"></span> Six technical projects <span aria-hidden="true">·</span> Two deployed dashboards</div>
-          </div>
-          <div class="preview" aria-label="Sample results from the customer analytics project">
-            <div class="preview-top"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Customer analytics / overview</span></div>
-            <div class="preview-body">
-              <div class="mini-label">Sample revenue analyzed</div>
-              <div class="revenue">25,180</div>
-              <span class="mini-pill">26 valid transactions</span>
-              <div class="mini-divider"></div>
-              <div class="mini-label">RFM customer segments</div>
-              <div class="segment-row"><span>Loyal</span><span class="segment-track"><span class="segment-fill" style="width: 50%"></span></span><strong>5</strong></div>
-              <div class="segment-row"><span>Recent</span><span class="segment-track"><span class="segment-fill recent" style="width: 40%"></span></span><strong>4</strong></div>
-              <div class="segment-row"><span>Needs attention</span><span class="segment-track"><span class="segment-fill attention" style="width: 10%"></span></span><strong>1</strong></div>
-              <p class="mini-foot">Illustrative summary based on a synthetic practice dataset.</p>
-            </div>
-          </div>
-        </div>
-        <div class="stat-strip" aria-label="Portfolio highlights">
-          <div class="stat"><strong>06</strong><span>Featured technical projects</span></div>
-          <div class="stat"><strong>02</strong><span>Live interactive dashboards</span></div>
-          <div class="stat"><strong>70%</strong><span>Repeat customers in sample analysis</span></div>
-          <div class="stat"><strong>Python</strong><span>Core analytics language</span></div>
-        </div>
-      </div>
-    </section>
 
-    <section class="section section-alt" id="projects">
-      <div class="wrap">
-        <div class="section-heading">
-          <div class="eyebrow">Selected work</div>
-          <h2>Projects built around real analytical workflows.</h2>
-          <p>Six technical projects covering data preparation, customer insights, dashboards, authentication log analysis, and risk-based security investigation. The sample data is synthetic.</p>
-        </div>
-        <div class="projects">
-          <article class="project">
-            <div class="project-top"><span class="project-number">01 / ANALYSIS</span><span class="project-label">Python</span></div>
-            <h3>Business Performance Analyzer</h3>
-            <p>Analyze revenue, costs, profits, margins, and business performance across currencies, services, and time periods.</p>
-            <div class="tags"><span>Python</span><span>CSV</span><span>Financial KPIs</span><span>pytest</span></div>
-            <div class="project-links"><a href="https://github.com/Erick1679/business-performance-analyzer" target="_blank" rel="noopener noreferrer">View source ↗</a></div>
-          </article>
-          <article class="project">
-            <div class="project-top"><span class="project-number">02 / DATA QUALITY</span><span class="project-label">pandas</span></div>
-            <h3>Data Cleaning Analyzer</h3>
-            <p>Standardize inconsistent records, identify duplicates and invalid data, perform exploratory analysis, and export reports.</p>
-            <div class="tags"><span>pandas</span><span>Data validation</span><span>EDA</span><span>CSV reports</span></div>
-            <div class="project-links"><a href="https://github.com/Erick1679/data-cleaning-analyzer" target="_blank" rel="noopener noreferrer">View source ↗</a></div>
-          </article>
-          <article class="project">
-            <div class="project-top"><span class="project-number">03 / CUSTOMER INTELLIGENCE</span><span class="project-label">RFM</span></div>
-            <h3>Customer Analytics & Segmentation</h3>
-            <p>Use transaction data to calculate customer recency, frequency, spend, retention, repeat-purchase rates, and segments.</p>
-            <div class="tags"><span>pandas</span><span>RFM</span><span>Retention</span><span>Matplotlib</span></div>
-            <div class="project-links"><a href="https://github.com/Erick1679/customer-analytics-segmentation" target="_blank" rel="noopener noreferrer">View source ↗</a></div>
-          </article>
-          <article class="project">
-            <div class="project-top"><span class="project-number">04 / VISUALIZATION</span><span class="project-label">Live app</span></div>
-            <h3>Business Intelligence Dashboard</h3>
-            <p>Explore business KPIs, revenue trends, countries, sales channels, and customer segments through an interactive web dashboard.</p>
-            <div class="tags"><span>Streamlit</span><span>Plotly</span><span>pandas</span><span>Filters</span></div>
-            <div class="project-links">
-              <a href="https://business-intelligence-dashboard-ezx2j4jrjmckjbdvd6uzkz.streamlit.app/" target="_blank" rel="noopener noreferrer">Launch dashboard ↗</a>
-              <a href="https://github.com/Erick1679/business-intelligence-dashboard" target="_blank" rel="noopener noreferrer">View source ↗</a>
-            </div>
-          </article>
-          <article class="project">
-            <div class="project-top"><span class="project-number">05 / SECURITY ANALYTICS</span><span class="project-label">Detection rules</span></div>
-            <h3>Security Log Analyzer</h3>
-            <p>Parse synthetic Linux SSH authentication logs, identify brute-force and password-spraying patterns, and generate explainable alerts, audit summaries, and an activity chart.</p>
-            <div class="tags"><span>Python</span><span>Log parsing</span><span>Threat detection</span><span>pytest</span></div>
-            <div class="project-links"><a href="https://github.com/Erick1679/security-log-analyzer" target="_blank" rel="noopener noreferrer">View source ↗</a></div>
-          </article>
-          <article class="project">
-            <div class="project-top"><span class="project-number">06 / END-TO-END SECURITY</span><span class="project-label">Live app</span></div>
-            <h3>End-to-End Analytics &amp; Security</h3>
-            <p>Integrate synthetic SSH, VPN, and cloud identity events; assess data quality; detect suspicious activity; calculate risk scores; and investigate alerts in an interactive dashboard.</p>
-            <div class="tags"><span>pandas</span><span>Risk scoring</span><span>Streamlit</span><span>Plotly</span></div>
-            <div class="project-links">
-              <a href="https://end-to-end-analytics-security-viz5xshvrmhgfjhhzu6zim.streamlit.app/" target="_blank" rel="noopener noreferrer">Launch security dashboard ↗</a>
-              <a href="https://github.com/Erick1679/end-to-end-analytics-security" target="_blank" rel="noopener noreferrer">View source ↗</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+    <!-- ==========================================
+             HERO
+        ========================================== -->
 
-    <section class="section" id="skills">
-      <div class="wrap skills-layout">
-        <div class="section-heading">
-          <div class="eyebrow">Technical toolkit</div>
-          <h2>Skills that move data forward.</h2>
-          <p>My toolkit spans business analytics, statistical software, security log analysis, and reproducible reporting.</p>
-        </div>
+    <section id="home" class="hero">
+      <div class="container hero-grid">
+
         <div>
-          <div class="skill-group"><h3>Spreadsheets & data preparation</h3><p>Microsoft Excel · data cleaning · data validation · exploratory data analysis</p></div>
-          <div class="skill-group"><h3>Business intelligence & dashboards</h3><p>Microsoft Power BI · Tableau · Streamlit · Plotly · Matplotlib · interactive reporting</p></div>
-          <div class="skill-group"><h3>Statistical analysis & research</h3><p>Stata · JASP (statistical analysis) · IBM SPSS Statistics · descriptive statistics</p></div>
-          <div class="skill-group"><h3>Programming & analytics</h3><p>Python · pandas · NumPy · revenue and margin KPIs · customer segmentation · RFM · retention</p></div>
-          <div class="skill-group"><h3>Security analytics &amp; investigation</h3><p>Authentication log parsing · anomaly indicators · detection rules · risk scoring · security event reporting</p></div>
-          <div class="skill-group"><h3>Quality &amp; delivery</h3><p>pytest · Git · GitHub · documentation · reproducible reports · deployed applications</p></div>
-        </div>
-      </div>
-    </section>
+          <p class="hero-label">
+            Data Analytics · Research · Business Intelligence
+          </p>
 
-    <section class="section section-alt" id="about">
-      <div class="wrap about-grid">
-        <div class="section-heading">
-          <div class="eyebrow">About me</div>
-          <h2>Analytical thinking, practical delivery.</h2>
-          <p>My portfolio brings together data cleaning, business and customer analysis, research-oriented reporting, and security intelligence. I build reproducible pipelines, test detection and calculation rules, and turn results into interactive evidence for decision-making.</p>
-          <p>My work uses synthetic demonstration datasets, with a focus on data quality, transparency, and practical decision support.</p>
-        </div>
-        <div class="about-card">
-          <p class="quote">“Good analysis doesn't stop at a number. It helps someone understand what the number means.”</p>
-          <small>My approach to data analytics</small>
-        </div>
-      </div>
-    </section>
+          <h1>
+            Erick Omondi<br>
+            <span>Data Analyst & Research Consultant</span>
+          </h1>
 
-    <section class="section" id="contact">
-      <div class="wrap">
-        <div class="contact">
-          <div class="eyebrow">Explore more</div>
-          <h2>Interested in my work?</h2>
-          <p>Browse all six technical projects, review the documentation, or explore either of my live interactive dashboards.</p>
-          <div class="actions" style="justify-content: center; margin-top: 0">
-            <a class="button button-primary" href="https://github.com/Erick1679" target="_blank" rel="noopener noreferrer">View my GitHub ↗</a>
-            <a class="button button-secondary" href="https://business-intelligence-dashboard-ezx2j4jrjmckjbdvd6uzkz.streamlit.app/" target="_blank" rel="noopener noreferrer">Business dashboard ↗</a>
-            <a class="button button-secondary" href="https://end-to-end-analytics-security-viz5xshvrmhgfjhhzu6zim.streamlit.app/" target="_blank" rel="noopener noreferrer">Security dashboard ↗</a>
+          <p class="hero-description">
+            I provide professional data analysis, research,
+            writing and consulting services. I help businesses,
+            researchers and organisations transform complex
+            information into clear insights, professional
+            reports and informed decisions.
+          </p>
+
+          <div class="availability">
+            Available for research and data analysis contracts
+          </div>
+
+          <div class="button-row">
+            <a href="#contact" class="button button-light">
+              Discuss a Project
+            </a>
+
+            <a href="#projects" class="button button-ghost">
+              Explore My Work
+            </a>
           </div>
         </div>
+
+        <!-- Subtle animated analytics chart -->
+
+        <div class="hero-visual">
+          <div class="visual-heading">
+            <span>Analytics & Business Intelligence</span>
+            <strong>Portfolio Overview</strong>
+          </div>
+
+          <svg class="chart-graphic" viewBox="0 0 440 260" role="img" aria-label="Decorative analytical trend chart">
+
+            <defs>
+              <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#7db5b0" stop-opacity=".25" />
+                <stop offset="100%" stop-color="#7db5b0" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+
+            <g stroke="#ffffff" stroke-opacity=".10" stroke-width="1">
+              <line x1="20" y1="40" x2="420" y2="40" />
+              <line x1="20" y1="90" x2="420" y2="90" />
+              <line x1="20" y1="140" x2="420" y2="140" />
+              <line x1="20" y1="190" x2="420" y2="190" />
+              <line x1="20" y1="240" x2="420" y2="240" />
+            </g>
+
+            <path d="M20 205 C80 175 95 195 145 150
+                                 S215 160 260 110
+                                 S340 128 420 45
+                                 L420 240 L20 240 Z" fill="url(#chartFill)" />
+
+            <path class="chart-line" d="M20 205 C80 175 95 195 145 150
+                                 S215 160 260 110
+                                 S340 128 420 45" fill="none" stroke="#9bcac3" stroke-width="3"
+              stroke-linecap="round" />
+
+            <path d="M20 220 C85 210 100 165 145 190
+                                 S225 115 260 145
+                                 S345 105 420 90" fill="none" stroke="#9caec6" stroke-width="2"
+              stroke-dasharray="5 6" />
+
+            <g fill="#9bcac3">
+              <circle class="chart-dot" cx="145" cy="150" r="4" />
+              <circle class="chart-dot" cx="260" cy="110" r="4" />
+              <circle class="chart-dot" cx="420" cy="45" r="4" />
+            </g>
+          </svg>
+
+          <div class="visual-footer">
+            <div>
+              <strong>15K+</strong>
+              <span>Customer records</span>
+            </div>
+
+            <div>
+              <strong>120K</strong>
+              <span>Transactions</span>
+            </div>
+
+            <div>
+              <strong>8</strong>
+              <span>Dashboard modules</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
+
+    <!-- ==========================================
+             PORTFOLIO METRICS
+        ========================================== -->
+
+    <div class="stats-section">
+      <div class="container">
+
+        <div class="stats-grid">
+          <div class="stat">
+            <strong>7</strong>
+            <span>Portfolio projects</span>
+          </div>
+
+          <div class="stat">
+            <strong>15,000</strong>
+            <span>Customers in flagship dataset</span>
+          </div>
+
+          <div class="stat">
+            <strong>120,000</strong>
+            <span>Transaction records analysed</span>
+          </div>
+
+          <div class="stat">
+            <strong>8</strong>
+            <span>Analytics dashboard modules</span>
+          </div>
+        </div>
+
+        <p class="stats-note">
+          Project volumes refer to the synthetic demonstration
+          data used in the Global Predictive Business Analytics Platform.
+        </p>
+
+      </div>
+    </div>
+
+    <!-- ==========================================
+             PERSONAL PROFILE
+        ========================================== -->
+
+    
+
+    <!-- ==========================================
+             PROFESSIONAL SERVICES
+        ========================================== -->
+
+    <section id="services" class="services-section">
+      <div class="container">
+
+        <span class="eyebrow">Professional Services</span>
+
+        <h2 class="section-title">
+          Research, analytics and consulting services.
+        </h2>
+
+        <p class="section-description">
+          I accept individual and organisational contracts
+          across data analysis, research, professional writing
+          and analytical reporting.
+        </p>
+
+        <div class="services-grid">
+
+          <article class="service-card">
+            <div class="service-number">01 / ANALYTICS</div>
+            <h3>Data Analysis & Interpretation</h3>
+            <p>
+              Data exploration, statistical summaries,
+              trend analysis, performance measurement
+              and interpretation of analytical findings.
+            </p>
+          </article>
+
+          <article class="service-card">
+            <div class="service-number">02 / RESEARCH</div>
+            <h3>Research & Report Writing</h3>
+            <p>
+              Research support, literature-based analysis,
+              structured reports, technical documentation
+              and evidence-based professional writing.
+            </p>
+          </article>
+
+          <article class="service-card">
+            <div class="service-number">03 / BUSINESS INTELLIGENCE</div>
+            <h3>Dashboard Development</h3>
+            <p>
+              Interactive dashboards, business KPI
+              monitoring, reporting automation and
+              management information systems.
+            </p>
+          </article>
+
+          <article class="service-card">
+            <div class="service-number">04 / DATA MANAGEMENT</div>
+            <h3>Data Cleaning & Preparation</h3>
+            <p>
+              Data validation, restructuring,
+              missing-value analysis, transformation
+              and preparation of analytical datasets.
+            </p>
+          </article>
+
+          <article class="service-card">
+            <div class="service-number">05 / PREDICTIVE ANALYTICS</div>
+            <h3>Predictive Modelling</h3>
+            <p>
+              Classification, regression, customer
+              analytics, forecasting and evaluation
+              of predictive models.
+            </p>
+          </article>
+
+          <article class="service-card">
+            <div class="service-number">06 / CONSULTING</div>
+            <h3>Business & Research Consulting</h3>
+            <p>
+              Analytical project support, research
+              interpretation, data storytelling and
+              practical recommendations for clients.
+            </p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+             FEATURED PROJECTS
+        ========================================== -->
+
+    <section id="projects" class="projects-section">
+      <div class="container">
+
+        <span class="eyebrow">Selected Portfolio Work</span>
+
+        <h2 class="section-title">
+          Analytics projects and practical solutions.
+        </h2>
+
+        <p class="section-description">
+          Selected projects demonstrating data engineering,
+          predictive analytics, dashboard development,
+          business intelligence and security analysis.
+        </p>
+
+        <!-- FLAGSHIP PROJECT -->
+
+        <article class="featured-project">
+
+          <div class="featured-content">
+            <span class="featured-label">
+              Featured Project / Predictive Analytics
+            </span>
+
+            <h3>
+              Global Predictive Business Analytics Platform
+            </h3>
+
+            <p>
+              A complete analytics system integrating
+              synthetic enterprise data, cleaning,
+              feature engineering, churn prediction,
+              revenue forecasting, customer lifetime
+              value analysis and business intelligence.
+            </p>
+
+            <p style="margin-top:16px;">
+              Includes a live Streamlit dashboard,
+              project documentation, screenshots,
+              Excel analytics and executive reporting.
+            </p>
+
+            <div class="button-row">
+              <a href="project-global-analytics.html" class="button button-light">
+                Explore Case Study
+              </a>
+
+              <a href="https://global-predictive-business-analytics-avfu5xsysvytxdjgdwedcg.streamlit.app/"
+                target="_blank" rel="noopener noreferrer" class="button button-ghost">
+                Live Dashboard
+              </a>
+
+              <a href="https://github.com/Erick1679/global-predictive-business-analytics" target="_blank"
+                rel="noopener noreferrer" class="button button-ghost">
+                Source Code
+              </a>
+            </div>
+          </div>
+
+          <div class="featured-image">
+            <img src="screenshots/01_executive_overview.png"
+              alt="Global Predictive Business Analytics executive dashboard" loading="lazy">
+          </div>
+
+        </article>
+
+        <!-- OTHER PROJECTS -->
+
+        <div class="project-grid">
+
+          <article class="project-card">
+            <span class="project-category">Business Intelligence</span>
+            <h3>Business Intelligence Dashboard</h3>
+            <p>
+              Interactive dashboards for performance
+              measurement, revenue monitoring and
+              business reporting.
+            </p>
+            <a class="project-link" href="https://github.com/Erick1679/business-intelligence-dashboard" target="_blank"
+              rel="noopener noreferrer">
+              Explore Project →
+            </a>
+          </article>
+
+          <article class="project-card">
+            <span class="project-category">Customer Analytics</span>
+            <h3>Customer Analytics & Segmentation</h3>
+            <p>
+              Customer profiling, segmentation
+              and behaviour analysis to support
+              retention and marketing decisions.
+            </p>
+            <a class="project-link" href="https://github.com/Erick1679/customer-analytics-segmentation" target="_blank"
+              rel="noopener noreferrer">
+              Explore Project →
+            </a>
+          </article>
+
+          <article class="project-card">
+            <span class="project-category">Business Analytics</span>
+            <h3>Business Performance Analyzer</h3>
+            <p>
+              Business performance evaluation,
+              revenue analysis, profitability
+              and operational KPI reporting.
+            </p>
+            <a class="project-link" href="https://github.com/Erick1679/business-performance-analyzer" target="_blank"
+              rel="noopener noreferrer">
+              Explore Project →
+            </a>
+          </article>
+
+          <article class="project-card">
+            <span class="project-category">Security Analytics</span>
+            <h3>Security Log Analyzer</h3>
+            <p>
+              Security event analysis,
+              suspicious pattern detection
+              and analytical investigation.
+            </p>
+            <a class="project-link" href="https://github.com/Erick1679/security-log-analyzer" target="_blank"
+              rel="noopener noreferrer">
+              Explore Project →
+            </a>
+          </article>
+
+          <article class="project-card">
+            <span class="project-category">Security Intelligence</span>
+            <h3>End-to-End Analytics Security Platform</h3>
+            <p>
+              Event monitoring, risk assessment,
+              security dashboards and investigation
+              reporting.
+            </p>
+            <a class="project-link" href="https://github.com/Erick1679/end-to-end-analytics-security" target="_blank"
+              rel="noopener noreferrer">
+              Explore Project →
+            </a>
+          </article>
+
+          <article class="project-card">
+            <span class="project-category">Data Engineering</span>
+            <h3>Data Cleaning Analyzer</h3>
+            <p>
+              Analytical data preparation,
+              quality validation and structured
+              transformation of datasets.
+            </p>
+            <a class="project-link" href="https://github.com/Erick1679/data-cleaning-analyzer" target="_blank"
+              rel="noopener noreferrer">
+              Explore Project →
+            </a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+             ANALYTICS SCREENSHOT GALLERY
+        ========================================== -->
+
+    <section id="gallery" class="gallery-section">
+      <div class="container">
+
+        <span class="eyebrow">Analytics Demonstrations</span>
+
+        <h2 class="section-title">
+          Business intelligence dashboards.
+        </h2>
+
+        <p class="section-description">
+          Examples from the Global Predictive Business
+          Analytics Platform, illustrating analysis,
+          forecasting and performance monitoring.
+        </p>
+
+        <div class="gallery-grid">
+
+          <a class="gallery-card" href="screenshots/01_executive_overview.png" target="_blank">
+            <img src="screenshots/01_executive_overview.png" alt="Executive Overview" loading="lazy">
+            <div>Executive Overview</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/02_revenue_forecasting.png" target="_blank">
+            <img src="screenshots/02_revenue_forecasting.png" alt="Revenue Forecasting" loading="lazy">
+            <div>Revenue Forecasting</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/03_customer_intelligence.png" target="_blank">
+            <img src="screenshots/03_customer_intelligence.png" alt="Customer Intelligence" loading="lazy">
+            <div>Customer Intelligence</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/04_customer_lifetime_value.png" target="_blank">
+            <img src="screenshots/04_customer_lifetime_value.png" alt="Customer Lifetime Value" loading="lazy">
+            <div>Customer Lifetime Value</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/05_product_analytics.png" target="_blank">
+            <img src="screenshots/05_product_analytics.png" alt="Product Analytics" loading="lazy">
+            <div>Product Analytics</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/06_operations_inventory.png" target="_blank">
+            <img src="screenshots/06_operations_inventory.png" alt="Operations and Inventory" loading="lazy">
+            <div>Operations & Inventory</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/07_model_performance.png" target="_blank">
+            <img src="screenshots/07_model_performance.png" alt="Model Performance" loading="lazy">
+            <div>Model Performance</div>
+          </a>
+
+          <a class="gallery-card" href="screenshots/08_data_quality.png" target="_blank">
+            <img src="screenshots/08_data_quality.png" alt="Data Quality" loading="lazy">
+            <div>Data Quality</div>
+          </a>
+
+        </div>
+
+        <div class="button-row">
+          <a href="reports/Global_Predictive_Business_Analytics_Report.xlsx" class="button button-outline" download>
+            Download Excel Report
+          </a>
+
+          <a href="reports/Global_Predictive_Business_Analytics_Executive_Report.pptx" class="button button-outline"
+            download>
+            Download Executive Presentation
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+             ABOUT / TECHNOLOGY
+        ========================================== -->
+
+    <section id="about" class="about-section">
+      <div class="container about-grid">
+
+        <div>
+          <span class="eyebrow">About My Approach</span>
+
+          <h2 class="section-title">
+            Combining analytical thinking with professional research.
+          </h2>
+
+          <p>
+            My work focuses on producing useful,
+            understandable and well-supported results
+            from data and research.
+          </p>
+
+          <p>
+            I value careful preparation, clear
+            methodology, accurate interpretation
+            and professional communication.
+          </p>
+
+          <p>
+            Whether the project involves research,
+            writing, statistical analysis, reporting
+            or predictive modelling, the objective
+            is to deliver practical value.
+          </p>
+        </div>
+
+        <div>
+          <span class="eyebrow">Technical Capabilities</span>
+
+          <h2 class="section-title">
+            Analytics tools and competencies.
+          </h2>
+
+          <p>
+            My portfolio demonstrates practical
+            experience building Python-based
+            analytical workflows, machine learning
+            applications and interactive dashboards.
+          </p>
+
+          <div class="skills-list">
+            <span class="skill">Python</span>
+            <span class="skill">Pandas</span>
+            <span class="skill">NumPy</span>
+            <span class="skill">Scikit-learn</span>
+            <span class="skill">Streamlit</span>
+            <span class="skill">Plotly</span>
+            <span class="skill">Excel</span>
+            <span class="skill">Data Cleaning</span>
+            <span class="skill">Predictive Analytics</span>
+            <span class="skill">Research</span>
+            <span class="skill">Technical Writing</span>
+            <span class="skill">Business Reporting</span>
+            <span class="skill">Git & GitHub</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+             CONTACT
+        ========================================== -->
+
+    
+        <!-- INSIGHTS AND RESEARCH -->
+
+        <section id="insights" class="insights-section">
+            <div class="container">
+
+                <span class="eyebrow">
+                    Insights &amp; Research
+                </span>
+
+                <h2 class="section-title">
+                    Perspectives on data, research and decisions.
+                </h2>
+
+                <p class="section-description">
+                    Original analytical writing exploring the methods,
+                    questions and evidence behind responsible business
+                    decisions. Read my perspectives on business intelligence,
+                    predictive analytics and professional research.
+                </p>
+
+                <div class="insights-grid">
+
+                    <article class="insights-card">
+
+                        <a href="insights.html#decision">
+                            <img
+                                src="https://images.unsplash.com/photo-1770681381576-f1fdceb2ea01?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+                                alt="Analytical charts displayed beside a notebook"
+                                loading="lazy">
+                        </a>
+
+                        <div class="insights-content">
+                            <span class="insights-category">
+                                Business Intelligence
+                            </span>
+
+                            <h3>
+                                The Decision Before the Dashboard
+                            </h3>
+
+                            <p>
+                                Effective analytics begins with understanding
+                                the questions businesses need to answer.
+                                Explore how reliable evidence and clear
+                                interpretation make dashboards genuinely useful.
+                            </p>
+
+                            <a class="insights-read"
+                               href="insights.html#decision">
+                                Read Article
+                            </a>
+                        </div>
+
+                        <div class="insights-credit">
+                            Photography:
+                            <a href="https://unsplash.com/photos/laptop-displaying-charts-next-to-notebook-and-mug-adFE-OdO7RA"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                nicoll camacho, Unsplash
+                            </a>
+                        </div>
+
+                    </article>
+
+                    <article class="insights-card">
+
+                        <a href="insights.html#forecasts">
+                            <img
+                                src="https://images.unsplash.com/photo-1763038311036-6d18805537e5?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+                                alt="Analyst reviewing performance charts on a laptop"
+                                loading="lazy">
+                        </a>
+
+                        <div class="insights-content">
+                            <span class="insights-category">
+                                Predictive Analytics
+                            </span>
+
+                            <h3>
+                                Forecasts Are Not Promises
+                            </h3>
+
+                            <p>
+                                Predictive models can support better
+                                planning, but their value depends on
+                                credible evaluation. Understand the
+                                importance of uncertainty, data quality
+                                and responsible forecasting.
+                            </p>
+
+                            <a class="insights-read"
+                               href="insights.html#forecasts">
+                                Read Article
+                            </a>
+                        </div>
+
+                        <div class="insights-credit">
+                            Photography:
+                            <a href="https://unsplash.com/photos/woman-working-on-laptop-with-charts-and-graphs-KNQUEQwTCY4"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                Apex Virtual Education, Unsplash
+                            </a>
+                        </div>
+
+                    </article>
+
+                    <article class="insights-card">
+
+                        <a href="insights.html#research">
+                            <img
+                                src="https://images.unsplash.com/photo-1746014601017-4e515ef51722?auto=format&amp;fit=crop&amp;w=900&amp;q=80"
+                                alt="Professional research and business reporting workspace"
+                                loading="lazy">
+                        </a>
+
+                        <div class="insights-content">
+                            <span class="insights-category">
+                                Research and Writing
+                            </span>
+
+                            <h3>
+                                Research That Stands Up to Questions
+                            </h3>
+
+                            <p>
+                                Credible research requires appropriate
+                                methods, dependable evidence and careful
+                                communication. Discover what makes
+                                an analytical report useful and trustworthy.
+                            </p>
+
+                            <a class="insights-read"
+                               href="insights.html#research">
+                                Read Article
+                            </a>
+                        </div>
+
+                        <div class="insights-credit">
+                            Photography:
+                            <a href="https://unsplash.com/photos/person-reviews-charts-on-a-laptop-at-a-table-YR7r3kB8Z54"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                Swello, Unsplash
+                            </a>
+                        </div>
+
+                    </article>
+
+                </div>
+
+                <div class="insights-actions">
+                    <a class="button button-primary"
+                       href="insights.html">
+                        Explore All Articles
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        
+        <!-- PROJECT BOOKING -->
+
+        <section id="booking" class="booking-section">
+            <div class="container">
+
+                <span class="eyebrow">
+                    Project Enquiries and Contracts
+                </span>
+
+                <div class="booking-layout">
+
+                    <div class="booking-information">
+
+                        <h2 class="section-title">
+                            Submit Your Project Requirements
+                        </h2>
+
+                        <p class="booking-description">
+                            Looking for professional assistance
+                            with data analysis, business research,
+                            analytical writing or reporting?
+                        </p>
+
+                        <p class="booking-description">
+                            Complete the project request form
+                            and provide a clear description
+                            of your requirements.
+                            You may attach supporting documents
+                            where applicable.
+                        </p>
+
+                        <div class="booking-details">
+
+                            <h3>
+                                What Happens Next?
+                            </h3>
+
+                            <p>
+                                1. Submit your project information
+                                and supporting documents.
+                            </p>
+
+                            <p>
+                                2. I review your requirements,
+                                scope and expected deliverables.
+                            </p>
+
+                            <p>
+                                3. I contact you to discuss
+                                pricing, timelines and the
+                                proposed approach.
+                            </p>
+
+                            <p>
+                                4. Work begins after we agree
+                                on the project terms.
+                            </p>
+
+                        </div>
+
+                        <p class="booking-description"
+                           style="margin-top:25px;">
+                            Submission of a request does not
+                            automatically confirm a contract
+                            or payment obligation.
+                        </p>
+
+                    </div>
+
+                    <div class="booking-form">
+
+                        <iframe
+                            src="https://tally.so/embed/jeDZaQ?alignLeft=1&amp;hideTitle=1&amp;transparentBackground=1"
+                            title="Erick Omondi Project Request Form"
+                            loading="lazy"
+                            height="850"
+                            scrolling="yes">
+                        </iframe>
+
+                        <p class="booking-fallback">
+                            If the form does not display correctly,
+                            <a href="https://tally.so/r/jeDZaQ"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                open the project request form directly.
+                            </a>
+                        </p>
+
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="profile" class="profile-section">
+      <div class="container profile-grid">
+
+        <div class="profile-image">
+          <img src="images/erick_omondi_data_insights_in_action.png"
+            alt="Erick Omondi professional analytics and consulting profile banner" loading="lazy">
+        </div>
+
+        <div class="profile-text">
+          <span class="eyebrow">Professional Profile</span>
+
+          <h2 class="section-title">
+            Data analysis and research with a clear purpose.
+          </h2>
+
+          <p>
+            I am Erick Omondi, a Data Analyst, Researcher
+            and Analytics Consultant with a strong interest
+            in evidence-based problem-solving, business
+            intelligence and professional research.
+          </p>
+
+          <p>
+            I work on analytical and research assignments,
+            helping clients understand data, investigate
+            business questions, develop dashboards and
+            communicate findings through professional reports.
+          </p>
+
+          <ul class="profile-specialties">
+            <li>Data analysis and interpretation</li>
+            <li>Research and professional writing</li>
+            <li>Business reporting and visualisation</li>
+            <li>Predictive analytics and modelling</li>
+            <li>Independent contract assignments</li>
+          </ul>
+
+          <div class="button-row">
+            <a href="mailto:brightwriters75@gmail.com" class="button button-primary">
+              Request My Services
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+        <section id="contact" class="contact-section">
+      <div class="container">
+
+        <span class="eyebrow">Contact & Contracts</span>
+
+        <h2 class="section-title">
+          Have a data analysis or research project?
+        </h2>
+
+        <p class="contact-intro">
+          I am available to discuss data analysis,
+          research, professional writing, reporting,
+          dashboard development and consulting assignments.
+          Contact me directly using the details below.
+        </p>
+
+        <div class="contact-grid">
+
+          <div class="contact-card">
+            <span>Professional Email</span>
+            <a href="mailto:brightwriters75@gmail.com">
+              brightwriters75@gmail.com
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <span>Direct Telephone</span>
+            <a href="tel:+254799433213">
+              +254 799 433 213
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <span>Calls & WhatsApp</span>
+            <a href="https://wa.me/254799581574" target="_blank" rel="noopener noreferrer">
+              +254 799 581 574
+            </a>
+          </div>
+
+        </div>
+
+        <div class="button-row">
+          <a href="mailto:brightwriters75@gmail.com?subject=Data%20Analysis%20or%20Research%20Enquiry"
+            class="button button-light">
+            Send an Email
+          </a>
+
+          <a href="tel:+254799433213" class="button button-ghost">
+            Call Directly
+          </a>
+
+          <a href="https://wa.me/254799581574?text=Hello%20Erick%2C%20I%20would%20like%20to%20discuss%20a%20project."
+            target="_blank" rel="noopener noreferrer" class="button button-ghost">
+            Contact on WhatsApp
+          </a>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap footer-inner">
-      <span>© <span id="year">2026</span> Erick Omondi. Built with HTML and CSS.</span>
-      <div class="footer-links"><a href="#home">Back to top ↑</a><a href="https://github.com/Erick1679" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
+  <!-- ==========================================
+         FOOTER
+    ========================================== -->
+
+  <footer>
+    <div class="container footer-content">
+
+      <p>
+        © 2026 Erick Omondi. All rights reserved.
+      </p>
+
+      <p>
+        Data Analytics | Research | Business Intelligence | Consulting
+      </p>
+
     </div>
   </footer>
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
 </body>
+
 </html>
