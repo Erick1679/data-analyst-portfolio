@@ -60,5 +60,5 @@ def places_api(request):
         "name": place.name,
         "place_type": place.place_type,
         "parent_code": place.parent.code if place.parent_id else None,
-    } for place in queryset.select_related("parent").order_by("name", "code")[:200]]
+    } for place in queryset.select_related("parent").order_by("name", "code")[:300]]
     return JsonResponse({"count": len(places), "results": places})
