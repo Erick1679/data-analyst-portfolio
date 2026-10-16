@@ -167,3 +167,36 @@ In Django admin, `Local authorities` can be maintained separately from
 require resolution before importing council records. Local authorities are
 **not exposed in the public API**, and creating them does not grant
 publication or commercial reuse rights.
+
+## Reviewed council CSV: preview before any import
+
+The Botswana review file `reference_data/botswana_local_authorities_reviewed.csv`
+contains 31 ministry-listed entries: 29 marked `include` and two disputed
+entries (`Francistown Town Council` and `Jwaneng District Council`)
+marked `hold` pending reconciliation with the government directory. The
+two existing records (Gaborone City Council and Chobe District Council)
+are recognized without replacement or approval-status changes. If both
+match the reviewed source, a preview should show **27 new, 2 existing,
+2 held**. The file is a *review candidate*, not a vetted authoritative
+geographic boundary dataset.
+
+First identify the existing Botswana Local Authorities DataSource ID.
+Then, from `backend`, preview the import (default: read-only):
+
+```bash
+python manage.py import_local_authorities_csv reference_data/botswana_local_authorities_reviewed.csv --country BW --source-id ID
+```
+
+After reviewing the full output, and only if the existing source, types and
+names match, explicitly apply:
+
+```bash
+python manage.py import_local_authorities_csv reference_data/botswana_local_authorities_reviewed.csv --country BW --source-id ID --apply
+```
+
+The command validates the full CSV before writing, saves only new records in
+one transaction, rejects conflicts without overwriting existing entries,
+and leaves `hold` records out. All new records remain pending verification
+and have no jurisdiction links. It does not change DataSource approvals or
+GeographicPlace rows. The administrative list and associated use rights
+still require review before publishing council-specific material.
