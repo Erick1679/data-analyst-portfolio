@@ -7,6 +7,7 @@
     <meta name="description" content="Explore research insights from The Brights Analytics on data quality, predictive modelling, business intelligence and evidence based decision making.">
     <meta name="author" content="Erick Omondi">
     <title>Research Insights | The Brights Analytics</title>
+    <link rel="icon" href="images/brights/The_Brights_Analytics_Approved_Favicon.ico">
 
     <style>
         :root {
@@ -71,10 +72,18 @@
         }
 
         .brand {
-            color: var(--navy);
-            font-size: 1.25rem;
-            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
             text-decoration: none;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 215px;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
         }
 
         .navigation-links {
@@ -419,6 +428,10 @@
                 gap: 16px;
             }
 
+            .brand-logo {
+                width: 175px;
+            }
+
             .blog-header {
                 padding: 60px 0;
             }
@@ -465,16 +478,18 @@
 
     <header class="site-header">
         <div class="container navigation">
-            <a href="index.html" class="brand">
-                The Brights Analytics
+            <a href="index.html" class="brand" aria-label="The Brights Analytics homepage">
+                <img src="images/brights/The_Brights_Analytics_Approved_Header.webp"
+                     alt="The Brights Analytics" class="brand-logo"
+                     width="792" height="242">
             </a>
 
             <nav class="navigation-links" aria-label="Main navigation">
                 <a href="index.html">Home</a>
-                <a href="index.html#projects">Portfolio</a>
+                <a href="index.html#projects">Projects</a>
                 <a href="index.html#services">Services</a>
-                <a href="index.html#contact" class="contact-button">
-                    Contact
+                <a href="index.html#booking" class="contact-button">
+                    Discuss a Project
                 </a>
             </nav>
         </div>
@@ -1376,7 +1391,7 @@
             </span>
 
             <span>
-                <a href="index.html">Portfolio</a>
+                <a href="index.html#projects">Projects</a>
                 |
                 <a href="index.html#contact">Contact</a>
             </span>
