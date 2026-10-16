@@ -1,0 +1,5 @@
+code,name,place_type,parent_code
+MW-CITY-BLANTYRE,Blantyre,city,MW-S
+MW-CITY-LILONGWE,Lilongwe,city,MW-C
+MW-CITY-MZUZU,Mzuzu,city,MW-N
+MW-CITY-ZOMBA,Zomba,city,MW-S
