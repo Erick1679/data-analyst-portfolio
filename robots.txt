@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://erickomondianalytics.netlify.app/sitemap.xml
+Sitemap: https://thebrightsanalytics.netlify.app/sitemap.xml
