@@ -98,3 +98,33 @@ Set DJANGO_DEBUG=0, a unique DJANGO_SECRET_KEY, DJANGO_ALLOWED_HOSTS, HTTPS,
 trusted origins as appropriate, secure backups and retention/access rules.
 Never commit .env, database files or client uploads. Do not deploy this
 prototype on the current static Netlify site: it does not host Django.
+
+## Bulk-import ISO countries and territories
+
+The free `pycountry` dependency supplies 249 ISO 3166-1 country/territory
+records from Debian's `pkg-isocodes` database. Its package licence is
+LGPL-2.1-only; confirm downstream licensing and attribution conditions
+before any commercial redistribution of reference data.
+
+Create a **new** DataSource in Django admin (do not reuse the internal manual
+test reference source):
+
+- Name: `ISO 3166-1 Countries — pycountry 26.2.16`
+- Publisher: `pycountry / Debian pkg-isocodes`
+- Source URL: `https://pypi.org/project/pycountry/`
+- Licence notes: `pycountry 26.2.16 / Debian pkg-isocodes; package LGPL-2.1-only. ISO-based geographic reference; publication and commercial reuse are pending separate review.`
+- Leave both publication and commercial approval boxes unchecked.
+
+Then from the `backend` folder run the following, replacing `ID` with
+its actual DataSource database ID:
+
+```bash
+python -m pip install -r requirements.txt
+python manage.py import_iso_countries --source-id ID --dry-run
+python manage.py import_iso_countries --source-id ID
+```
+
+The import leaves previously entered countries such as Kenya (KE) and
+United States (US) unchanged, and is safe to run repeatedly. It adds only
+country and territory reference entries, not statistics, cities or phone
+numbers. Source usage rights and names require continued review.
