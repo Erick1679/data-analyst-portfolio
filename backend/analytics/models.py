@@ -30,6 +30,7 @@ class GeographicPlace(models.Model):
         ("county", "County"),
         ("district", "District"),
         ("city", "City"),
+        ("town", "Town"),
         ("municipality", "Municipality"),
         ("department", "Department"),
         ("prefecture", "Prefecture"),
