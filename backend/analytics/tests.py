@@ -51,6 +51,36 @@ class WorldwideGeographyTests(TestCase):
         ).json()["results"]
         self.assertEqual(county_children[0]["place_type"], "city")
 
+    def test_kenyan_counties_follow_official_numbers_not_iso_codes(self):
+        mombasa = GeographicPlace.objects.create(
+            code="KE-MOMBASA-ISO", name="Mombasa", place_type="county",
+            parent=self.kenya, data_source=self.source,
+        )
+        baringo = GeographicPlace.objects.create(
+            code="KE-01", name="Baringo", place_type="county",
+            parent=self.kenya, data_source=self.source,
+        )
+        response = self.client.get(reverse("places-api"), {"parent": "KE"})
+        results = response.json()["results"]
+        self.assertEqual(
+            [item["county_number"] for item in results],
+            ["001", "030", "047"],
+        )
+        self.assertEqual(
+            [item["code"] for item in results],
+            [mombasa.code, baringo.code, self.nairobi_county.code],
+        )
+        self.assertEqual(results[0]["display_name"], "001 — Mombasa")
+        self.assertEqual(results[-1]["display_name"], "047 — Nairobi County")
+        self.assertEqual(self.nairobi_city.parent_id, self.nairobi_county.pk)
+
+    def test_us_state_names_unaffected(self):
+        response = self.client.get(reverse("places-api"), {"parent": "US"})
+        item = response.json()["results"][0]
+        self.assertEqual(item["name"], "California")
+        self.assertEqual(item["code"], "US-CA")
+        self.assertIsNone(item["county_number"])
+
     def test_unapproved_data_is_hidden(self):
         response = self.client.get(reverse("indicator-api"))
         self.assertEqual(response.status_code, 200)
