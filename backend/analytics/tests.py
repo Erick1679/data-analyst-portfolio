@@ -5,7 +5,9 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import ClientEnquiry, DataSource, GeographicIndicator, GeographicPlace
+from .models import (
+    ClientEnquiry, DataSource, GeographicIndicator, GeographicPlace, LocalAuthority,
+)
 
 
 class WorldwideGeographyTests(TestCase):
@@ -80,6 +82,38 @@ class WorldwideGeographyTests(TestCase):
         self.assertEqual(item["name"], "California")
         self.assertEqual(item["code"], "US-CA")
         self.assertIsNone(item["county_number"])
+
+    def test_local_authority_is_separate_from_geographic_places(self):
+        council = LocalAuthority(
+            name="Example City Council", country=self.us,
+            authority_type="city_council", source=self.source,
+        )
+        council.full_clean()
+        council.save()
+        self.assertEqual(council.verification_status, "pending")
+        self.assertIsNone(council.jurisdiction)
+        results = self.client.get(
+            reverse("places-api"), {"parent": "US"}
+        ).json()["results"]
+        self.assertNotIn(council.name, {item["name"] for item in results})
+
+    def test_local_authority_rejects_non_country_parent(self):
+        council = LocalAuthority(
+            name="Invalid council", country=self.california,
+            source=self.source,
+        )
+        with self.assertRaises(ValidationError):
+            council.full_clean()
+
+    def test_local_authority_jurisdiction_must_be_in_its_country(self):
+        council = LocalAuthority(
+            name="Example Kenya Council", country=self.kenya,
+            source=self.source, jurisdiction=self.california,
+        )
+        with self.assertRaises(ValidationError):
+            council.full_clean()
+        council.jurisdiction = self.nairobi_county
+        council.full_clean()
 
     def test_unapproved_data_is_hidden(self):
         response = self.client.get(reverse("indicator-api"))
