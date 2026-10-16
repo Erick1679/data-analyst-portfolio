@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kenya County Intelligence | The Brights Analytics</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#f5f7f8;color:#0b1723;font:16px/1.6 system-ui,sans-serif}
+    header{background:#0b1723;color:white;padding:22px 5vw}
+    main{max-width:1100px;margin:auto;padding:45px 20px}
+    h1{font-size:clamp(2rem,5vw,3.3rem);line-height:1.1}
+    p{max-width:780px;color:#475569}
+    .label{color:#0d9488;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .panel{background:white;border:1px solid #dce4e9;border-radius:12px;overflow-x:auto}
+    table{border-collapse:collapse;width:100%;min-width:640px}
+    th,td{border-bottom:1px solid #e5e9ed;padding:14px;text-align:left}
+    th{background:#e5f1ef}
+  </style>
+</head>
+<body>
+<header><strong>The Brights Analytics</strong> · Data Intelligence</header>
+<main>
+  <div class="label">Research and Analytics</div>
+  <h1>Kenya County Intelligence</h1>
+  <p>A prototype for verified county-level indicators. Only administrator-approved
+     aggregate datasets appear here. Check original source dates before interpreting values.</p>
+  <p id="status" role="status" aria-live="polite">Checking for the latest published results…</p>
+  <div class="panel"><table>
+    <thead><tr><th>County</th><th>Indicator</th><th>Period</th><th>Value</th><th>Publisher</th></tr></thead>
+    <tbody id="results">
+    {% for row in rows %}
+      <tr><td>{{ row.county }}</td><td>{{ row.indicator }}</td>
+      <td>{{ row.period }}</td><td>{{ row.value }} {{ row.unit }}</td>
+      <td>{{ row.source.publisher }}</td></tr>
+    {% empty %}
+      <tr><td colspan="5">No approved data published yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p>This dashboard checks the backend every minute. Source data itself may be updated
+     daily, monthly or less often, depending on the publisher.</p>
+</main>
+<script>
+async function updateData(){
+  const status=document.getElementById("status");
+  try{
+    const response=await fetch("/api/county-indicators/",{cache:"no-store"});
+    if(!response.ok)throw Error("Data unavailable");
+    const data=await response.json();
+    const fragment=document.createDocumentFragment();
+    for(const item of data.results){
+      const tr=document.createElement("tr");
+      for(const value of [item.county,item.indicator,item.period,item.value+" "+item.unit,item.publisher]){
+        const td=document.createElement("td");td.textContent=value;tr.appendChild(td);
+      }
+      fragment.appendChild(tr);
+    }
+    if(!data.results.length){
+      const tr=document.createElement("tr"),td=document.createElement("td");
+      td.colSpan=5;td.textContent="No approved data published yet.";tr.appendChild(td);
+      fragment.appendChild(tr);
+    }
+    document.getElementById("results").replaceChildren(fragment);
+    status.textContent="Displaying "+data.count+" published indicators. Checked at "+
+      new Date().toLocaleTimeString()+".";
+  }catch(error){status.textContent="Could not refresh data; showing previously loaded results."}
+}
+updateData();setInterval(updateData,60000);
+</script>
+</body>
+</html>
