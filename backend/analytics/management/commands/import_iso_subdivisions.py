@@ -26,6 +26,7 @@ TYPE_MAP = {
     "Federal district": "district",
     "Capital district": "district",
     "City": "city",
+    "Town": "town",
     "Municipality": "municipality",
     "Department": "department",
     "Prefecture": "prefecture",
