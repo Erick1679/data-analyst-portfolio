@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
+from .kenya_counties import official_county_number
 from .models import GeographicIndicator, GeographicPlace
 
 
@@ -55,10 +56,31 @@ def places_api(request):
         queryset = GeographicPlace.objects.filter(
             parent__isnull=True, place_type=GeographicPlace.COUNTRY
         )
-    places = [{
-        "code": place.code,
-        "name": place.name,
-        "place_type": place.place_type,
-        "parent_code": place.parent.code if place.parent_id else None,
-    } for place in queryset.select_related("parent").order_by("name", "code")[:300]]
+    records = list(queryset.select_related("parent").order_by("name", "code")[:300])
+
+    # Kenyan official county numbers (001–047) differ from ISO 3166-2 keys.
+    # Sort/display by the official number without changing stored place codes.
+    if parent_code == "KE":
+        records.sort(key=lambda place: (
+            int(official_county_number(place.name) or "999")
+            if place.place_type == "county" else 1000,
+            place.name, place.code,
+        ))
+
+    places = []
+    for place in records:
+        county_number = (
+            official_county_number(place.name)
+            if parent_code == "KE" and place.place_type == "county" else None
+        )
+        places.append({
+            "code": place.code,
+            "name": place.name,
+            "display_name": (
+                f"{county_number} — {place.name}" if county_number else place.name
+            ),
+            "county_number": county_number,
+            "place_type": place.place_type,
+            "parent_code": place.parent.code if place.parent_id else None,
+        })
     return JsonResponse({"count": len(places), "results": places})
