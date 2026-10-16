@@ -128,3 +128,16 @@ The import leaves previously entered countries such as Kenya (KE) and
 United States (US) unchanged, and is safe to run repeatedly. It adds only
 country and territory reference entries, not statistics, cities or phone
 numbers. Source usage rights and names require continued review.
+
+## Kenya county numbering in the dashboard
+
+Kenya's official county numbers are **001 Mombasa** through **047 Nairobi**
+(see the [Government of Kenya county list](https://gok.kenya.go.ke/devolved-governments)
+and the [Kenya Gazette](https://new.kenyalaw.org/akn/ke/officialGazette/gazette/2024-05-09/64/eng@2024-05-09/source)).
+
+The geographic child API `/api/places/?parent=KE` orders counties by these
+official numbers, with `county_number` and `display_name` fields like
+`"001 — Mombasa"`. The dashboard uses the display label. Existing database
+keys and source provenance remain untouched: `KE-01` in the ISO source is
+Baringo, **not** Kenya's official County 001. This is a display crosswalk, not
+a replacement of ISO identifiers. Other countries still sort alphabetically.
