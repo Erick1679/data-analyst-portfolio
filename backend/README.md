@@ -141,3 +141,29 @@ official numbers, with `county_number` and `display_name` fields like
 keys and source provenance remain untouched: `KE-01` in the ISO source is
 Baringo, **not** Kenya's official County 001. This is a display crosswalk, not
 a replacement of ISO identifiers. Other countries still sort alphabetically.
+
+
+## Local authorities (separate from geographic places)
+
+A `LocalAuthority` is an administrative institution (for example, a
+district, town or city council). It is **not** a new district, city or
+territory. Each authority records its name, country, council type, DataSource,
+verification status (pending by default), optional notes, and an **optional**
+geographic jurisdiction. Jurisdiction links are only for independently
+verified relationships; the model validates that a linked place belongs to
+the selected country.
+
+Generate and apply the migration after updating the development branch:
+
+```bash
+python manage.py makemigrations analytics
+python manage.py migrate
+python manage.py test analytics
+```
+
+In Django admin, `Local authorities` can be maintained separately from
+`Geographic places`. The Botswana 31-council review is held in
+`reference_data/botswana_local_authorities_review.md`; its naming disputes
+require resolution before importing council records. Local authorities are
+**not exposed in the public API**, and creating them does not grant
+publication or commercial reuse rights.
