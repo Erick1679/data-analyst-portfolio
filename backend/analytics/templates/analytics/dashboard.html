@@ -97,14 +97,16 @@ async function addSelector(parentCode, depth) {
   if (!data.results.length) return;
   const wrapper = document.createElement("label");
   const heading = document.createElement("span");
-  heading.textContent = depth === 0 ? "Country or territory" : "Region, county, state or city";
+  heading.textContent = depth === 0 ? "Country or territory" :
+    (parentCode === "KE" ? "Kenyan county (001–047)" : "Region, county, state or city");
   const select = document.createElement("select");
   const placeholder = document.createElement("option");
   placeholder.value=""; placeholder.textContent="Select a place";
   select.appendChild(placeholder);
   for (const place of data.results) {
     const option = document.createElement("option");
-    option.value=place.code; option.textContent=place.name+" ("+place.place_type+")";
+    option.value=place.code;
+    option.textContent=(place.display_name || place.name)+" ("+place.place_type+")";
     select.appendChild(option);
   }
   select.addEventListener("change", async () => {
