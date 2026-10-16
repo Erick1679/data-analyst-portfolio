@@ -10,6 +10,7 @@
     <meta name="description" content="Explore a predictive analytics case study using synthetic business data, featuring dashboards, forecasting, customer insights and model evaluation.">
 
     <title>Predictive Analytics Case Study | The Brights Analytics</title>
+    <link rel="icon" href="images/brights/The_Brights_Analytics_Approved_Favicon.ico">
 
 
     <style>
@@ -104,13 +105,19 @@
 
         .nav {
 
-            height: 75px;
+            min-height: 75px;
 
             display: flex;
 
             align-items: center;
 
             justify-content: space-between;
+
+            flex-wrap: wrap;
+
+            gap: 12px 24px;
+
+            padding: 12px 0;
 
         }
 
@@ -120,6 +127,23 @@
             font-weight: 800;
 
             font-size: 1.1rem;
+
+            letter-spacing: .01em;
+
+        }
+
+        .brand:hover,
+        .brand:focus-visible {
+
+            color: var(--accent);
+
+        }
+
+        .back-link:focus-visible,
+        .brand:focus-visible {
+
+            outline: 2px solid var(--accent);
+            outline-offset: 5px;
 
         }
 
@@ -274,12 +298,12 @@
         <div class="container nav">
 
 
-            <div class="brand">
+            <a class="brand" href="index.html" aria-label="The Brights Analytics homepage">
                 The Brights Analytics
-            </div>
+            </a>
 
 
-            <a class="back-link" href="index.html">
+            <a class="back-link" href="index.html#projects">
 
                 ← Back to Projects
 
