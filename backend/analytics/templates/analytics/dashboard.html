@@ -1,71 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Kenya County Intelligence | The Brights Analytics</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Worldwide Data Intelligence | The Brights Analytics</title>
   <style>
-    *{box-sizing:border-box}
-    body{margin:0;background:#f5f7f8;color:#0b1723;font:16px/1.6 system-ui,sans-serif}
-    header{background:#0b1723;color:white;padding:22px 5vw}
-    main{max-width:1100px;margin:auto;padding:45px 20px}
-    h1{font-size:clamp(2rem,5vw,3.3rem);line-height:1.1}
-    p{max-width:780px;color:#475569}
-    .label{color:#0d9488;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-    .panel{background:white;border:1px solid #dce4e9;border-radius:12px;overflow-x:auto}
-    table{border-collapse:collapse;width:100%;min-width:640px}
-    th,td{border-bottom:1px solid #e5e9ed;padding:14px;text-align:left}
-    th{background:#e5f1ef}
+    * { box-sizing: border-box; }
+    body { margin:0; background:#f5f7f8; color:#0b1723;
+           font:16px/1.6 system-ui,-apple-system,sans-serif; }
+    header { background:#0b1723; color:white; padding:22px 5vw; }
+    main { max-width:1100px; margin:auto; padding:48px 20px; }
+    h1 { font-size:clamp(2rem,5vw,3.4rem); line-height:1.12; }
+    p { max-width:780px; color:#475569; }
+    .label { font-weight:750; text-transform:uppercase; color:#0d9488;
+             letter-spacing:.08em; }
+    .selectors { display:flex; flex-wrap:wrap; gap:12px; margin:24px 0; }
+    .selectors label { display:flex; flex-direction:column; gap:5px; min-width:200px; }
+    select { border:1px solid #a5b6c0; border-radius:6px; background:white;
+             padding:12px; font:inherit; }
+    select:focus-visible { outline:3px solid #0d9488; outline-offset:3px; }
+    .panel { background:white; border:1px solid #dce4e9; border-radius:12px;
+             overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; min-width:680px; }
+    th,td { border-bottom:1px solid #e5e9ed; padding:14px; text-align:left; }
+    th { background:#e5f1ef; }
+    .muted { font-size:.9rem; }
   </style>
 </head>
 <body>
-<header><strong>The Brights Analytics</strong> · Data Intelligence</header>
+<header><strong>The Brights Analytics</strong> · Global Intelligence</header>
 <main>
-  <div class="label">Research and Analytics</div>
-  <h1>Kenya County Intelligence</h1>
-  <p>A prototype for verified county-level indicators. Only administrator-approved
-     aggregate datasets appear here. Check original source dates before interpreting values.</p>
-  <p id="status" role="status" aria-live="polite">Checking for the latest published results…</p>
+  <div class="label">Research · Markets · Regional Analytics</div>
+  <h1>Worldwide Data Intelligence</h1>
+  <p>Explore available country, regional, state, county and city-level
+     statistical indicators. Only licensed, reviewed and approved aggregate
+     observations are published.</p>
+  <div id="selectors" class="selectors" aria-label="Geographic filters"></div>
+  <p id="status" role="status" aria-live="polite">Checking approved data…</p>
   <div class="panel"><table>
-    <thead><tr><th>County</th><th>Indicator</th><th>Period</th><th>Value</th><th>Publisher</th></tr></thead>
+    <thead><tr><th>Place</th><th>Type</th><th>Indicator</th><th>Period</th><th>Value</th><th>Publisher</th></tr></thead>
     <tbody id="results">
-    {% for row in rows %}
-      <tr><td>{{ row.county }}</td><td>{{ row.indicator }}</td>
-      <td>{{ row.period }}</td><td>{{ row.value }} {{ row.unit }}</td>
-      <td>{{ row.source.publisher }}</td></tr>
-    {% empty %}
-      <tr><td colspan="5">No approved data published yet.</td></tr>
-    {% endfor %}
+      {% for row in rows %}
+      <tr><td>{{ row.place.label_path }}</td><td>{{ row.place.get_place_type_display }}</td>
+      <td>{{ row.indicator }}</td><td>{{ row.period }}</td>
+      <td>{{ row.value }} {{ row.unit }}</td><td>{{ row.source.publisher }}</td></tr>
+      {% empty %}
+      <tr><td colspan="6">No approved indicators are available yet.</td></tr>
+      {% endfor %}
     </tbody>
   </table></div>
-  <p>This dashboard checks the backend every minute. Source data itself may be updated
-     daily, monthly or less often, depending on the publisher.</p>
+  <p class="muted">The browser checks published results every minute. This
+     does not mean every dataset updates in real time; release frequencies
+     depend on the data publisher.</p>
 </main>
 <script>
-async function updateData(){
-  const status=document.getElementById("status");
-  try{
-    const response=await fetch("/api/county-indicators/",{cache:"no-store"});
-    if(!response.ok)throw Error("Data unavailable");
-    const data=await response.json();
-    const fragment=document.createDocumentFragment();
-    for(const item of data.results){
-      const tr=document.createElement("tr");
-      for(const value of [item.county,item.indicator,item.period,item.value+" "+item.unit,item.publisher]){
-        const td=document.createElement("td");td.textContent=value;tr.appendChild(td);
+const filters = document.getElementById("selectors");
+let currentPlace = "";
+async function json(url) {
+  const response = await fetch(url, {cache:"no-store"});
+  if (!response.ok) throw new Error("Request failed");
+  return response.json();
+}
+async function refreshIndicators() {
+  const status = document.getElementById("status");
+  try {
+    const query = currentPlace ? "?place="+encodeURIComponent(currentPlace) : "";
+    const data = await json("/api/indicators/"+query);
+    const fragment = document.createDocumentFragment();
+    for (const item of data.results) {
+      const row = document.createElement("tr");
+      for (const value of [
+        item.place_path,item.place_type,item.indicator,item.period,
+        item.value+" "+item.unit,item.publisher
+      ]) {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        row.appendChild(cell);
       }
-      fragment.appendChild(tr);
+      fragment.appendChild(row);
     }
-    if(!data.results.length){
-      const tr=document.createElement("tr"),td=document.createElement("td");
-      td.colSpan=5;td.textContent="No approved data published yet.";tr.appendChild(td);
-      fragment.appendChild(tr);
+    if (!data.results.length) {
+      const row = document.createElement("tr"), cell=document.createElement("td");
+      cell.colSpan = 6; cell.textContent="No approved indicators for this selection.";
+      row.appendChild(cell); fragment.appendChild(row);
     }
     document.getElementById("results").replaceChildren(fragment);
-    status.textContent="Displaying "+data.count+" published indicators. Checked at "+
+    status.textContent = "Showing "+data.count+" approved observations. Checked at "+
       new Date().toLocaleTimeString()+".";
-  }catch(error){status.textContent="Could not refresh data; showing previously loaded results."}
+  } catch (error) {
+    status.textContent = "The latest data could not be loaded. Showing cached display.";
+  }
 }
-updateData();setInterval(updateData,60000);
+async function addSelector(parentCode, depth) {
+  const query = parentCode ? "?parent="+encodeURIComponent(parentCode) : "";
+  const data = await json("/api/places/"+query);
+  if (!data.results.length) return;
+  const wrapper = document.createElement("label");
+  const heading = document.createElement("span");
+  heading.textContent = depth === 0 ? "Country or territory" : "Region, county, state or city";
+  const select = document.createElement("select");
+  const placeholder = document.createElement("option");
+  placeholder.value=""; placeholder.textContent="Select a place";
+  select.appendChild(placeholder);
+  for (const place of data.results) {
+    const option = document.createElement("option");
+    option.value=place.code; option.textContent=place.name+" ("+place.place_type+")";
+    select.appendChild(option);
+  }
+  select.addEventListener("change", async () => {
+    while (wrapper.nextSibling) wrapper.nextSibling.remove();
+    currentPlace = select.value || parentCode;
+    refreshIndicators();
+    if (select.value) {
+      try { await addSelector(select.value,depth+1); }
+      catch (error) {
+        document.getElementById("status").textContent="Places could not be loaded.";
+      }
+    }
+  });
+  wrapper.append(heading,select);
+  filters.appendChild(wrapper);
+}
+refreshIndicators();
+addSelector("",0).catch(() => {
+  document.getElementById("status").textContent="Geographic filters are unavailable.";
+});
+setInterval(refreshIndicators,60000);
 </script>
 </body>
 </html>
