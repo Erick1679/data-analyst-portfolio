@@ -1,5 +1,11 @@
 from datetime import date
 from decimal import Decimal
+from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from django.core.management import call_command
+from django.core.management.base import CommandError
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -82,6 +88,57 @@ class WorldwideGeographyTests(TestCase):
         self.assertEqual(item["name"], "California")
         self.assertEqual(item["code"], "US-CA")
         self.assertIsNone(item["county_number"])
+
+    def test_local_authority_csv_dry_run_and_apply(self):
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "councils.csv"
+            path.write_text(
+                "name,authority_type,import_decision,notes\n"
+                "Example City Council,city_council,include,Test reference\n"
+                "Disputed Council,other,hold,Naming conflict\n",
+                encoding="utf-8",
+            )
+            call_command(
+                "import_local_authorities_csv", str(path),
+                country="KE", source_id=self.source.pk, stdout=StringIO(),
+            )
+            self.assertEqual(LocalAuthority.objects.count(), 0)
+            call_command(
+                "import_local_authorities_csv", str(path),
+                country="KE", source_id=self.source.pk, apply=True,
+                stdout=StringIO(),
+            )
+            council = LocalAuthority.objects.get(name="Example City Council")
+            self.assertEqual(council.verification_status, "pending")
+            self.assertIsNone(council.jurisdiction_id)
+            self.assertEqual(LocalAuthority.objects.count(), 1)
+            call_command(
+                "import_local_authorities_csv", str(path),
+                country="KE", source_id=self.source.pk, apply=True,
+                stdout=StringIO(),
+            )
+            self.assertEqual(LocalAuthority.objects.count(), 1)
+
+    def test_local_authority_csv_rejects_conflicts_without_writes(self):
+        LocalAuthority.objects.create(
+            name="Existing Council", country=self.kenya,
+            authority_type="district_council", source=self.source,
+        )
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "councils.csv"
+            path.write_text(
+                "name,authority_type,import_decision,notes\n"
+                "New Council,city_council,include,Test\n"
+                "Existing Council,town_council,include,Conflict\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(CommandError):
+                call_command(
+                    "import_local_authorities_csv", str(path),
+                    country="KE", source_id=self.source.pk, apply=True,
+                    stdout=StringIO(),
+                )
+        self.assertEqual(LocalAuthority.objects.count(), 1)
 
     def test_local_authority_is_separate_from_geographic_places(self):
         council = LocalAuthority(
