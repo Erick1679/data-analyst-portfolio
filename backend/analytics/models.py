@@ -89,6 +89,91 @@ class GeographicPlace(models.Model):
         return f"{self.name} ({self.code})"
 
 
+
+class LocalAuthority(models.Model):
+    """A governing body, not an additional geographic place.
+
+    A council's relationship to a GeographicPlace is optional and should
+    only be entered after verifying its exact jurisdiction.
+    """
+
+    AUTHORITY_TYPES = [
+        ("district_council", "District council"),
+        ("city_council", "City council"),
+        ("town_council", "Town council"),
+        ("municipal_council", "Municipal council"),
+        ("regional_council", "Regional council"),
+        ("other", "Other local authority"),
+    ]
+    VERIFICATION_STATUSES = [
+        ("pending", "Pending verification"),
+        ("verified", "Verified against authoritative source"),
+    ]
+
+    name = models.CharField(max_length=180)
+    country = models.ForeignKey(
+        GeographicPlace, on_delete=models.PROTECT,
+        related_name="local_authorities",
+        help_text="Choose a country or territory, not a district or town.",
+    )
+    authority_type = models.CharField(
+        max_length=24, choices=AUTHORITY_TYPES, default="other",
+    )
+    jurisdiction = models.ForeignKey(
+        GeographicPlace, null=True, blank=True, on_delete=models.PROTECT,
+        related_name="linked_local_authorities",
+        help_text="Optional. Link only to a geographically verified jurisdiction.",
+    )
+    source = models.ForeignKey(
+        DataSource, on_delete=models.PROTECT,
+        related_name="local_authorities",
+    )
+    verification_status = models.CharField(
+        max_length=12, choices=VERIFICATION_STATUSES, default="pending",
+    )
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["country__name", "name"]
+        verbose_name_plural = "Local authorities"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "name"],
+                name="unique_local_authority_name_per_country",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        if not self.country_id:
+            return
+        if self.country.place_type != GeographicPlace.COUNTRY:
+            raise ValidationError({
+                "country": "A local authority must be assigned to a country."
+            })
+        if not self.jurisdiction_id:
+            return
+        ancestor = self.jurisdiction
+        visited = set()
+        if ancestor.pk == self.country_id:
+            raise ValidationError({
+                "jurisdiction": "Link a verified subnational area, or leave blank."
+            })
+        while ancestor is not None:
+            if ancestor.pk == self.country_id:
+                return
+            if ancestor.pk in visited:
+                break
+            visited.add(ancestor.pk)
+            ancestor = ancestor.parent
+        raise ValidationError({
+            "jurisdiction": "The linked area must belong to the selected country."
+        })
+
+    def __str__(self):
+        return f"{self.name} ({self.country.code})"
+
+
 class GeographicIndicator(models.Model):
     """A published aggregate statistical observation for any geographic level."""
     source = models.ForeignKey(DataSource, on_delete=models.PROTECT)
