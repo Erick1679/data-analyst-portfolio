@@ -16,4 +16,8 @@ urlpatterns = [
         "<uuid:organization_id>/datasets/",
         include("datasets.urls"),
     ),
+    path(
+        "<uuid:organization_id>/audit/",
+        include("auditlog.urls"),
+    ),
 ]

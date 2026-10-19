@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "analytics",
     "organizations",
     "datasets",
+    "auditlog",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
