@@ -80,3 +80,68 @@ class CorporateDataset(models.Model):
 
     def __str__(self):
         return f"{self.organization.name}: {self.name}"
+
+
+class DatasetAccessGrant(models.Model):
+    """An explicit, revocable dataset access grant for a membership."""
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    dataset = models.ForeignKey(
+        CorporateDataset,
+        on_delete=models.PROTECT,
+        related_name="access_grants",
+    )
+
+    membership = models.ForeignKey(
+        "organizations.OrganizationMembership",
+        on_delete=models.PROTECT,
+        related_name="dataset_access_grants",
+    )
+
+    granted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="dataset_access_grants_issued",
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    granted_at = models.DateTimeField(auto_now_add=True)
+    revoked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["dataset", "membership"],
+                name="unique_dataset_membership_grant",
+            ),
+        ]
+
+    def clean(self):
+        """Reject grants spanning different organizations."""
+        from django.core.exceptions import ValidationError
+
+        super().clean()
+
+        if not self.dataset_id or not self.membership_id:
+            return
+
+        if (
+            self.dataset.organization_id
+            != self.membership.organization_id
+        ):
+            raise ValidationError(
+                "Dataset and membership must belong "
+                "to the same organization."
+            )
+
+    def __str__(self):
+        return f"{self.dataset_id} -> {self.membership_id}"

@@ -15,6 +15,9 @@ ALLOWED_AUDIT_ACTIONS = frozenset({
     "dataset.creation_denied",
     "dataset.viewed",
     "dataset.access_denied",
+    "dataset.grant_created",
+    "dataset.grant_revoked",
+    "dataset.grant_reactivated",
     "membership.changed",
 })
 

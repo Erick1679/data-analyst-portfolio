@@ -67,12 +67,33 @@ def can_view_dataset(user, dataset):
     if membership is None:
         return False
 
-    # Restricted access requires a future explicit grant mechanism.
-    # No role alone grants restricted dataset visibility.
+    # Restricted datasets require an explicit active access grant.
+    # Organization roles alone never authorize restricted viewing.
     if dataset.classification == "restricted":
-        return False
+        from .models import DatasetAccessGrant
+
+        return DatasetAccessGrant.objects.filter(
+            dataset=dataset,
+            membership=membership,
+            is_active=True,
+            revoked_at__isnull=True,
+        ).exists()
 
     return dataset.classification in DATASET_PERMISSIONS.get(
         membership.role,
         set(),
     )
+
+
+GRANT_MANAGERS = frozenset({"owner", "admin"})
+
+
+def can_manage_dataset_grants(user, organization):
+    """Allow only active owners and admins to manage dataset grants."""
+
+    membership = get_active_membership(user, organization)
+
+    if membership is None:
+        return False
+
+    return membership.role in GRANT_MANAGERS
