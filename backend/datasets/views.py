@@ -219,10 +219,42 @@ def dataset_detail(request, organization_id, dataset_id):
     if organization is None:
         raise Http404("Dataset not found.")
 
-    dataset = get_accessible_dataset(
-        user=request.user,
+    # Only active organization members may generate tenant audit events.
+    if get_active_membership(request.user, organization) is None:
+        raise Http404("Dataset not found.")
+
+    try:
+        dataset = get_accessible_dataset(
+            user=request.user,
+            organization=organization,
+            dataset_id=dataset_id,
+        )
+    except Http404:
+        # Audit only if the dataset exists in this organization.
+        # Preserve the same 404 response for every denied lookup.
+        from .models import CorporateDataset
+
+        if CorporateDataset.objects.filter(
+            organization=organization,
+            id=dataset_id,
+        ).exists():
+            record_audit_event(
+                action="dataset.access_denied",
+                outcome="denied",
+                organization=organization,
+                actor=request.user,
+                target_type="dataset",
+                target_id=str(dataset_id),
+            )
+        raise
+
+    record_audit_event(
+        action="dataset.viewed",
+        outcome="success",
         organization=organization,
-        dataset_id=dataset_id,
+        actor=request.user,
+        target_type="dataset",
+        target_id=str(dataset.id),
     )
 
     return JsonResponse({
