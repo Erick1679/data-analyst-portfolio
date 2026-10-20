@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http import Http404
 
 from organizations.models import Organization
+from auditlog.services import record_audit_event
 
 from .models import CorporateDataset
 from .permissions import (
@@ -48,6 +49,17 @@ def create_dataset(
 
     dataset.full_clean()
     dataset.save()
+
+    # Record success within the same database transaction.
+    # If audit recording fails, dataset creation rolls back.
+    record_audit_event(
+        action="dataset.created",
+        outcome="success",
+        organization=organization,
+        actor=user,
+        target_type="dataset",
+        target_id=str(dataset.id),
+    )
 
     return dataset
 

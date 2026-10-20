@@ -7,6 +7,7 @@ from django.http import Http404, JsonResponse
 from django.views.decorators.http import require_GET, require_http_methods
 
 from organizations.models import Organization
+from auditlog.services import record_audit_event
 
 from .permissions import get_active_membership
 from .services import (
@@ -166,6 +167,16 @@ def dataset_list(request, organization_id):
             ),
         )
     except PermissionDenied:
+        # The rejected creation service transaction has exited.
+        # Record only sanitized authorization-denial metadata.
+        record_audit_event(
+            action="dataset.creation_denied",
+            outcome="denied",
+            organization=organization,
+            actor=request.user,
+            target_type="dataset",
+        )
+
         return JsonResponse(
             {"detail": "Dataset creation is not permitted."},
             status=403,
