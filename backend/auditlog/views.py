@@ -35,8 +35,38 @@ def audit_history(request, organization_id):
     except PermissionDenied:
         raise Http404("Audit history not found.")
 
-    # Return only the 50 most recent audit events.
-    events = events[:50]
+    # Validate pagination before evaluating the queryset.
+    page_value = request.GET.get("page", "1")
+
+    if (
+        not isinstance(page_value, str)
+        or not page_value.isascii()
+        or not page_value.isdecimal()
+        or len(page_value) > 9
+    ):
+        return JsonResponse(
+            {"detail": "Invalid page number."},
+            status=400,
+        )
+
+    page = int(page_value)
+
+    if page < 1:
+        return JsonResponse(
+            {"detail": "Page number must be positive."},
+            status=400,
+        )
+
+    page_size = 50
+    offset = (page - 1) * page_size
+
+    # Fetch one extra event to determine whether another page exists.
+    page_events = list(
+        events[offset:offset + page_size + 1]
+    )
+
+    has_next = len(page_events) > page_size
+    events = page_events[:page_size]
 
     results = [
         {
@@ -53,5 +83,8 @@ def audit_history(request, organization_id):
     return JsonResponse({
         "organization_id": str(organization.id),
         "count": len(results),
+        "page": page,
+        "page_size": page_size,
+        "has_next": has_next,
         "results": results,
     })
