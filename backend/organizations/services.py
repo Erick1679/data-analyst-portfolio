@@ -256,6 +256,36 @@ def deactivate_organization_membership(
                 "The last active owner cannot be deactivated."
             )
 
+    # Revoke existing restricted dataset grants before completing
+    # membership deactivation. All changes share one transaction.
+    from django.utils import timezone
+    from datasets.models import DatasetAccessGrant
+
+    active_grants = list(
+        DatasetAccessGrant.objects.select_for_update().filter(
+            membership=membership,
+            dataset__organization=organization,
+            is_active=True,
+        )
+    )
+
+    revoked_at = timezone.now()
+
+    for grant in active_grants:
+        grant.is_active = False
+        grant.revoked_at = revoked_at
+        grant.full_clean()
+        grant.save(update_fields=["is_active", "revoked_at"])
+
+        record_audit_event(
+            action="dataset.grant_revoked",
+            outcome="success",
+            organization=organization,
+            actor=actor,
+            target_type="dataset_access_grant",
+            target_id=str(grant.pk),
+        )
+
     membership.is_active = False
     membership.full_clean()
     membership.save(update_fields=["is_active"])
