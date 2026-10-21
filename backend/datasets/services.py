@@ -129,6 +129,7 @@ def issue_dataset_access_grant(
     organization,
     dataset,
     membership,
+    return_action=False,
 ):
     """Issue or reactivate a tenant-scoped restricted dataset grant."""
 
@@ -202,6 +203,9 @@ def issue_dataset_access_grant(
         target_type="dataset_access_grant",
         target_id=str(grant.id),
     )
+
+    if return_action:
+        return grant, action
 
     return grant
 
