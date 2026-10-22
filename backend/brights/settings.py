@@ -48,10 +48,60 @@ TEMPLATES = [{
     ]},
 }]
 WSGI_APPLICATION = "brights.wsgi.application"
-DATABASES = {"default": {
-    "ENGINE": "django.db.backends.sqlite3",
-    "NAME": BASE_DIR / "db.sqlite3",
-}}
+# SQLite remains the default until PostgreSQL is explicitly selected.
+database_engine = os.environ.get(
+    "BRIGHTS_DATABASE_ENGINE", "sqlite"
+).strip().lower()
+
+if database_engine == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif database_engine == "postgresql":
+    required_database_settings = {
+        "NAME": "BRIGHTS_POSTGRES_DB",
+        "USER": "BRIGHTS_POSTGRES_USER",
+        "PASSWORD": "BRIGHTS_POSTGRES_PASSWORD",
+    }
+
+    missing = [
+        environment_variable
+        for environment_variable in required_database_settings.values()
+        if not os.environ.get(environment_variable)
+    ]
+
+    if missing:
+        raise ImproperlyConfigured(
+            "Missing PostgreSQL environment variables: "
+            + ", ".join(missing)
+        )
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ["BRIGHTS_POSTGRES_DB"],
+            "USER": os.environ["BRIGHTS_POSTGRES_USER"],
+            "PASSWORD": os.environ["BRIGHTS_POSTGRES_PASSWORD"],
+            "HOST": os.environ.get(
+                "BRIGHTS_POSTGRES_HOST", "127.0.0.1"
+            ),
+            "PORT": os.environ.get(
+                "BRIGHTS_POSTGRES_PORT", "5432"
+            ),
+            "CONN_MAX_AGE": 0,
+            "TEST": {
+                "NAME": "test_brights_analytics_dev_db",
+            },
+        }
+    }
+else:
+    raise ImproperlyConfigured(
+        "Unsupported BRIGHTS_DATABASE_ENGINE. "
+        "Use 'sqlite' or 'postgresql'."
+    )
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},

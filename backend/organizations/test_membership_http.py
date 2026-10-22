@@ -1,3 +1,4 @@
+from unittest import skipUnless
 """HTTP security tests for corporate membership management."""
 
 import json
@@ -261,6 +262,7 @@ class MembershipCreationHTTPTests(TestCase):
                 user=self.recipient,
             ).exists()
         )
+    @skipUnless(__import__("django").db.connections["default"].vendor == "sqlite", "SQLite-specific locking test")
 
     def test_sqlite_lock_returns_retryable_503(self):
         from unittest.mock import patch
@@ -456,6 +458,7 @@ class MembershipRoleChangeHTTPTests(TestCase):
 
         self.analyst_membership.refresh_from_db()
         self.assertEqual(self.analyst_membership.role, "analyst")
+    @skipUnless(__import__("django").db.connections["default"].vendor == "sqlite", "SQLite-specific locking test")
 
     def test_role_change_sqlite_lock_returns_503(self):
         from unittest.mock import patch
@@ -646,6 +649,7 @@ class MembershipDeactivationHTTPTests(TestCase):
 
         self.analyst_membership.refresh_from_db()
         self.assertTrue(self.analyst_membership.is_active)
+    @skipUnless(__import__("django").db.connections["default"].vendor == "sqlite", "SQLite-specific locking test")
 
     def test_deactivation_sqlite_lock_returns_503(self):
         from unittest.mock import patch

@@ -1,3 +1,4 @@
+from unittest import skipUnless
 """HTTP security tests for dataset grant management."""
 
 import json
@@ -456,6 +457,7 @@ class GrantManagementHTTPTests(TestCase):
             id=created.json()["id"],
         )
         self.assertFalse(grant.is_active)
+    @skipUnless(__import__("django").db.connections["default"].vendor == "sqlite", "SQLite-specific locking test")
 
     def test_sqlite_lock_returns_retryable_response(self):
         from unittest.mock import patch
@@ -478,6 +480,7 @@ class GrantManagementHTTPTests(TestCase):
             response.content.decode(),
         )
         self.assertEqual(DatasetAccessGrant.objects.count(), 0)
+    @skipUnless(__import__("django").db.connections["default"].vendor == "sqlite", "SQLite-specific locking test")
 
     def test_revocation_sqlite_lock_returns_503(self):
         from unittest.mock import patch
