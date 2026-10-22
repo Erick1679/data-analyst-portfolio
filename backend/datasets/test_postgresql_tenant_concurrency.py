@@ -721,3 +721,145 @@ class PostgreSQLTenantConcurrencyTests(TransactionTestCase):
             grant_result,
             reassignment_result,
         )
+
+    def test_existing_grant_update_blocks_dataset_reassignment(self):
+        import time
+        from concurrent.futures import TimeoutError as FutureTimeout
+        from django.db import connection
+
+        if connection.vendor != "postgresql":
+            self.skipTest("PostgreSQL-specific concurrency test")
+
+        second_dataset = CorporateDataset.objects.create(
+            organization=self.org_a,
+            created_by=self.owner,
+            name="Second Concurrent Tenant Dataset",
+            classification="restricted",
+        )
+
+        grant = DatasetAccessGrant.objects.create(
+            dataset=self.dataset,
+            membership=self.membership,
+            granted_by=self.owner,
+        )
+
+        grant_updated = Event()
+        reassignment_ready = Event()
+        release_update = Event()
+        backend_ids = {}
+
+        def update_existing_grant():
+            close_old_connections()
+            try:
+                with transaction.atomic():
+                    with connection.cursor() as cursor:
+                        cursor.execute("SET LOCAL lock_timeout = '8s'")
+                        cursor.execute("SET LOCAL statement_timeout = '12s'")
+                        cursor.execute("SELECT pg_backend_pid()")
+                        backend_ids["update"] = cursor.fetchone()[0]
+
+                    changed = DatasetAccessGrant.objects.filter(
+                        pk=grant.pk
+                    ).update(dataset=second_dataset)
+
+                    if changed != 1:
+                        raise RuntimeError("Grant update count was not one.")
+
+                    grant_updated.set()
+
+                    if not release_update.wait(timeout=10):
+                        raise RuntimeError("Grant update release timed out.")
+
+                return "grant_update_committed"
+            finally:
+                close_old_connections()
+
+        def reassign_second_dataset():
+            close_old_connections()
+            try:
+                if not grant_updated.wait(timeout=10):
+                    raise RuntimeError("Grant update did not complete.")
+
+                with transaction.atomic():
+                    with connection.cursor() as cursor:
+                        cursor.execute("SET LOCAL lock_timeout = '8s'")
+                        cursor.execute("SET LOCAL statement_timeout = '12s'")
+                        cursor.execute("SELECT pg_backend_pid()")
+                        backend_ids["reassignment"] = cursor.fetchone()[0]
+
+                    reassignment_ready.set()
+
+                    try:
+                        CorporateDataset.objects.filter(
+                            pk=second_dataset.pk
+                        ).update(organization=self.org_b)
+                    except IntegrityError:
+                        return "reassignment_integrity_rejected"
+
+                return "reassignment_committed"
+            finally:
+                close_old_connections()
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            update_future = executor.submit(update_existing_grant)
+            reassignment_future = executor.submit(reassign_second_dataset)
+
+            observed_block = False
+
+            try:
+                if not reassignment_ready.wait(timeout=6):
+                    if update_future.done():
+                        update_future.result()
+                    if reassignment_future.done():
+                        reassignment_future.result()
+                    raise RuntimeError("Reassignment worker was not ready.")
+
+                deadline = time.monotonic() + 5
+
+                with connection.cursor() as cursor:
+                    while time.monotonic() < deadline:
+                        cursor.execute(
+                            "SELECT pg_blocking_pids(%s)",
+                            [backend_ids["reassignment"]],
+                        )
+                        blockers = cursor.fetchone()[0]
+
+                        if backend_ids["update"] in blockers:
+                            observed_block = True
+                            break
+
+                        if reassignment_future.done():
+                            break
+
+                        time.sleep(0.05)
+            finally:
+                release_update.set()
+
+            update_result = update_future.result(timeout=15)
+            reassignment_result = reassignment_future.result(timeout=15)
+
+        grant.refresh_from_db()
+        second_dataset.refresh_from_db()
+
+        self.assertTrue(
+            observed_block,
+            "Expected PostgreSQL blocking relationship was not observed.",
+        )
+        self.assertEqual(update_result, "grant_update_committed")
+        self.assertEqual(
+            reassignment_result,
+            "reassignment_integrity_rejected",
+        )
+        self.assertEqual(grant.dataset_id, second_dataset.pk)
+        self.assertEqual(second_dataset.organization_id, self.org_a.pk)
+        self.assertEqual(
+            grant.membership.organization_id,
+            second_dataset.organization_id,
+        )
+
+        print(
+            "PostgreSQL existing-grant update regression:",
+            update_result,
+            reassignment_result,
+            "blocking_confirmed",
+        )
