@@ -33,6 +33,10 @@ urlpatterns = [
         include("datasets.urls"),
     ),
     path(
+        "<uuid:organization_id>/retail/",
+        include("retail.urls"),
+    ),
+    path(
         "<uuid:organization_id>/audit/",
         include("auditlog.urls"),
     ),
