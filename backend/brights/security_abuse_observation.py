@@ -108,7 +108,8 @@ def evaluate_abuse_observation(observation, thresholds=None):
 
     if (
         observation.authentication_failures
-        + observation.authorization_denials
+        > observation.request_count
+        or observation.authorization_denials
         > observation.request_count
     ):
         return unknown

@@ -126,7 +126,7 @@ class AbuseObservationTests(SimpleTestCase):
         result = evaluate_abuse_observation(
             self.observe(
                 requests=5,
-                auth_failures=4,
+                auth_failures=6,
                 denials=4,
             ),
             self.thresholds,
