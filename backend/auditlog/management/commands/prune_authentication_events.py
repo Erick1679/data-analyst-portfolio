@@ -4,7 +4,7 @@ import calendar
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection, transaction
+from django.db import DatabaseError, connection, transaction
 from django.utils import timezone
 
 from auditlog.models import AuthenticationEvent
@@ -111,6 +111,17 @@ class Command(BaseCommand):
             )
 
     def handle(self, *args, **options):
+        try:
+            return self._handle_retention(*args, **options)
+        except DatabaseError:
+            # Do not include exception text, SQL, or connection
+            # details in scheduler-facing CLI error output.
+            # CommandError retains Django's nonzero failure exit.
+            raise CommandError(
+                "Authentication retention database operation failed."
+            ) from None
+
+    def _handle_retention(self, *args, **options):
         apply = options["apply"]
         expected_database = options["expected_database"]
         expected_user = options["expected_user"]

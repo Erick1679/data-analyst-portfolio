@@ -427,3 +427,88 @@ class AuthenticationRetentionTests(SimpleTestCase):
             output.getvalue().count("deleted=0"),
             3,
         )
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._handle_retention"
+    )
+    def test_database_error_uses_static_safe_message(self, handler):
+        from django.core.management.base import CommandError
+        from django.db import DatabaseError
+
+        handler.side_effect = DatabaseError(
+            "synthetic-private-value-DO-NOT-LOG"
+        )
+
+        with self.assertRaises(CommandError) as caught:
+            call_command(
+                "prune_authentication_events",
+                stdout=StringIO(),
+            )
+
+        self.assertEqual(
+            str(caught.exception),
+            "Authentication retention database operation failed.",
+        )
+        self.assertTrue(caught.exception.__suppress_context__)
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._handle_retention"
+    )
+    def test_operational_error_uses_static_safe_message(self, handler):
+        from django.core.management.base import CommandError
+        from django.db import OperationalError
+
+        handler.side_effect = OperationalError(
+            "synthetic-private-connection-detail"
+        )
+
+        with self.assertRaises(CommandError) as caught:
+            call_command(
+                "prune_authentication_events",
+                stdout=StringIO(),
+            )
+
+        self.assertEqual(
+            str(caught.exception),
+            "Authentication retention database operation failed.",
+        )
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._handle_retention"
+    )
+    def test_existing_command_error_is_not_rewritten(self, handler):
+        from django.core.management.base import CommandError
+
+        handler.side_effect = CommandError(
+            "Explicit cleanup authorization required."
+        )
+
+        with self.assertRaisesRegex(
+            CommandError,
+            "Explicit cleanup authorization required",
+        ):
+            call_command(
+                "prune_authentication_events",
+                stdout=StringIO(),
+            )
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._handle_retention"
+    )
+    def test_programming_error_still_propagates(self, handler):
+        handler.side_effect = ValueError(
+            "unexpected programming defect"
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "unexpected programming defect",
+        ):
+            call_command(
+                "prune_authentication_events",
+                stdout=StringIO(),
+            )
