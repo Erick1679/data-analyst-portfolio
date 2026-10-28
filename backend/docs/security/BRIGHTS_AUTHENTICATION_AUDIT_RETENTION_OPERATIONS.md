@@ -109,9 +109,11 @@ Use privacy-safe operational metadata only. Never include
 passwords, session identifiers, raw login credentials, full
 connection strings, or request payloads.
 
-The currently implemented command reports eligible counts and an
-apply confirmation. Detailed actual deletion counts, structured
-metrics, and centralized alert delivery are not yet implemented.
+The currently implemented command reports eligible counts and,
+after a successful transaction commit, actual deleted
+AuthenticationEvent row counts for each event type and in total.
+Structured metrics, persistent execution history, and centralized
+alert delivery are not yet implemented.
 
 The scheduling platform should treat a nonzero process exit code as
 a failed execution and alert the responsible operator.
@@ -177,7 +179,8 @@ These tests do not constitute production deployment approval.
 - Select and verify hosting infrastructure.
 - Approve retention periods.
 - Establish dedicated execution credentials.
-- Implement reliable actual-deletion metrics.
+- Decide whether structured metrics beyond the existing
+  per-event deletion counts are required.
 - Define monitoring and alert destinations.
 - Complete a nonproduction scheduled execution.
 - Approve and activate the daily schedule.
