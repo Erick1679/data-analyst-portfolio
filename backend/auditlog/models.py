@@ -76,3 +76,45 @@ class AuditEvent(models.Model):
             f"({self.outcome}) "
             f"at {self.created_at}"
         )
+
+# Authentication events are independent of organization audit records.
+# Credentials, session identifiers and request metadata are not stored.
+from django.conf import settings as authentication_settings
+
+
+class AuthenticationEvent(models.Model):
+    LOGIN_SUCCESS = "login_success"
+    LOGIN_FAILURE = "login_failure"
+    LOGOUT = "logout"
+
+    EVENT_TYPES = [
+        (LOGIN_SUCCESS, "Successful login"),
+        (LOGIN_FAILURE, "Failed login"),
+        (LOGOUT, "Logout"),
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+
+    user = models.ForeignKey(
+        authentication_settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="authentication_events",
+    )
+
+    event_type = models.CharField(
+        max_length=32,
+        choices=EVENT_TYPES,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    class Meta:
+        ordering = ("-created_at", "-id")
+
+    def __str__(self):
+        return f"Authentication event {self.pk}: {self.event_type}"
