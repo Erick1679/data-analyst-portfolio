@@ -161,12 +161,30 @@ class Command(BaseCommand):
             }
             self._report_counts(cutoffs, counts)
 
-            for queryset in eligible.values():
-                queryset.delete()
+            deleted_counts = {}
 
+            for event_type, queryset in eligible.items():
+                _, by_model = queryset.delete()
+
+                # Django reports deletions by model label.
+                # Count only actual AuthenticationEvent rows,
+                # excluding any hypothetical related-model rows.
+                deleted_counts[event_type] = by_model.get(
+                    AuthenticationEvent._meta.label,
+                    0,
+                )
+
+        # Report success only after transaction.atomic()
+        # has exited and PostgreSQL has committed.
         self.stdout.write(
             self.style.SUCCESS(
                 "APPLIED: authentication retention cleanup "
-                "committed successfully."
+                "committed successfully. "
+                f"deleted_total={sum(deleted_counts.values())}"
             )
         )
+
+        for event_type, deleted in deleted_counts.items():
+            self.stdout.write(
+                f"{event_type}: deleted={deleted}"
+            )

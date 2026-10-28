@@ -120,6 +120,10 @@ class AuthenticationRetentionTests(SimpleTestCase):
     ):
         queryset = MagicMock()
         queryset.count.return_value = 2
+        queryset.delete.return_value = (
+            2,
+            {"auditlog.AuthenticationEvent": 2},
+        )
         filter_mock.return_value = queryset
         atomic_mock.return_value = nullcontext()
 
@@ -141,6 +145,11 @@ class AuthenticationRetentionTests(SimpleTestCase):
             "retention_lab_owner",
         )
         self.assertIn("APPLIED:", output.getvalue())
+        self.assertIn("deleted_total=6", output.getvalue())
+        self.assertEqual(
+            output.getvalue().count("deleted=2"),
+            3,
+        )
 
     def test_only_three_known_event_types_have_cutoffs(self):
         now = datetime(
@@ -277,4 +286,144 @@ class AuthenticationRetentionTests(SimpleTestCase):
         self.assertEqual(
             cursor.execute.call_args.args[1],
             [LOCK_NAMESPACE, LOCK_OPERATION],
+        )
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._verify_target_and_lock"
+    )
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.transaction.atomic"
+    )
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.AuthenticationEvent.objects.filter"
+    )
+    def test_actual_deletion_counts_ignore_other_models(
+        self,
+        filter_mock,
+        atomic_mock,
+        verify_mock,
+    ):
+        querysets = [MagicMock() for _ in range(3)]
+
+        for queryset in querysets:
+            queryset.count.return_value = 5
+            queryset.delete.return_value = (
+                7,
+                {
+                    "auditlog.AuthenticationEvent": 5,
+                    "other.RelatedModel": 2,
+                },
+            )
+
+        filter_mock.side_effect = querysets
+        atomic_mock.return_value = nullcontext()
+        output = StringIO()
+
+        call_command(
+            "prune_authentication_events",
+            "--apply",
+            "--expected-database=lab",
+            "--expected-user=owner",
+            stdout=output,
+        )
+
+        self.assertIn("deleted_total=15", output.getvalue())
+        self.assertEqual(
+            output.getvalue().count("deleted=5"),
+            3,
+        )
+        verify_mock.assert_called_once_with("lab", "owner")
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._verify_target_and_lock"
+    )
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.transaction.atomic"
+    )
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.AuthenticationEvent.objects.filter"
+    )
+    def test_failed_delete_never_reports_success(
+        self,
+        filter_mock,
+        atomic_mock,
+        verify_mock,
+    ):
+        querysets = [MagicMock() for _ in range(3)]
+
+        for queryset in querysets:
+            queryset.count.return_value = 1
+
+        querysets[0].delete.return_value = (
+            1,
+            {"auditlog.AuthenticationEvent": 1},
+        )
+        querysets[1].delete.side_effect = RuntimeError(
+            "simulated deletion failure"
+        )
+
+        filter_mock.side_effect = querysets
+        atomic_mock.return_value = nullcontext()
+        output = StringIO()
+
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "simulated deletion failure",
+        ):
+            call_command(
+                "prune_authentication_events",
+                "--apply",
+                "--expected-database=lab",
+                "--expected-user=owner",
+                stdout=output,
+            )
+
+        self.assertNotIn("APPLIED:", output.getvalue())
+        self.assertNotIn("deleted_total=", output.getvalue())
+        querysets[2].delete.assert_not_called()
+
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.Command._verify_target_and_lock"
+    )
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.transaction.atomic"
+    )
+    @patch(
+        "auditlog.management.commands."
+        "prune_authentication_events.AuthenticationEvent.objects.filter"
+    )
+    def test_zero_deleted_records_reported_explicitly(
+        self,
+        filter_mock,
+        atomic_mock,
+        verify_mock,
+    ):
+        queryset = MagicMock()
+        queryset.count.return_value = 0
+        queryset.delete.return_value = (0, {})
+        filter_mock.return_value = queryset
+        atomic_mock.return_value = nullcontext()
+
+        output = StringIO()
+
+        call_command(
+            "prune_authentication_events",
+            "--apply",
+            "--expected-database=lab",
+            "--expected-user=owner",
+            stdout=output,
+        )
+
+        self.assertIn("deleted_total=0", output.getvalue())
+        self.assertEqual(
+            output.getvalue().count("deleted=0"),
+            3,
         )
