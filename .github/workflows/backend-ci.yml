@@ -82,4 +82,4 @@ jobs:
       - name: Execute retail PostgreSQL tests
         env:
           DJANGO_DEBUG: "1"
-        run: python manage.py test retail --noinput --verbosity 1
+        run: python manage.py test retail auditlog.test_auth_signals auditlog.test_auth_retention brights.test_session_policy brights.test_admin_idle_timeout --noinput --verbosity 1
