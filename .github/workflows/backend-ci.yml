@@ -1,12 +1,11 @@
+
 name: Brights Backend CI
 
 on:
   pull_request:
     branches:
       - main
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend-ci.yml"
+
   push:
     branches:
       - feature/brights-retail-foundation
@@ -16,7 +15,7 @@ on:
 
 permissions:
   contents: read
-
+  
 concurrency:
   group: backend-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
