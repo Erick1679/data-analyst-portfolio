@@ -280,4 +280,3 @@ All implementation changes must:
 - Avoid exposing local secrets or credentials.
 - Receive review and automated checks before merging.
 - Remain disabled in production until validated.
-
