@@ -177,6 +177,7 @@ class InventoryTransactionServiceTests(TestCase):
     def test_reconciliation_reports_exact_balance(self):
         receive_stock(**self.request())
         result = reconcile_inventory_balances(
+            user=self.owner,
             organization=self.organization
         )
         self.assertEqual(len(result), 1)
@@ -193,6 +194,7 @@ class InventoryTransactionServiceTests(TestCase):
             quantity_on_hand=Decimal("7.000")
         )
         result = reconcile_inventory_balances(
+            user=self.owner,
             organization=self.organization
         )
         self.assertEqual(result[0]["variance"], Decimal("2.000"))
