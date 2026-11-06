@@ -1,3 +1,4 @@
+import uuid
 from decimal import Decimal
 from queue import Queue
 from threading import Barrier, Event, Thread
@@ -377,6 +378,7 @@ class RetailDatabaseIntegrityTests(TestCase):
             movement_type=StockMovement.MovementType.RECEIPT,
             quantity=Decimal("5.000"),
             recorded_by=self.user,
+            idempotency_key=uuid.uuid4(),
         )
 
         alternative_branch = Branch.objects.create(
@@ -406,6 +408,7 @@ class RetailDatabaseIntegrityTests(TestCase):
             movement_type=StockMovement.MovementType.RECEIPT,
             quantity=Decimal("5.000"),
             recorded_by=self.user,
+            idempotency_key=uuid.uuid4(),
         )
 
         alternative_product = Product.objects.create(
@@ -479,6 +482,7 @@ class RetailDatabaseIntegrityTests(TestCase):
             movement_type=StockMovement.MovementType.RECEIPT,
             quantity=Decimal("5.000"),
             recorded_by=self.user,
+            idempotency_key=uuid.uuid4(),
         )
 
         InventoryBalance.objects.filter(
@@ -736,6 +740,7 @@ class RetailConcurrencyTests(TransactionTestCase):
             movement_type=StockMovement.MovementType.RECEIPT,
             quantity=Decimal("1.000"),
             recorded_by_id=self.user.pk,
+            idempotency_key=uuid.uuid4(),
         )
 
     # ---------------------------------------------------------
@@ -883,111 +888,34 @@ class RetailConcurrencyTests(TransactionTestCase):
     # Stock movement updates must lock their inventory balance
     # ---------------------------------------------------------
 
-    def test_movement_quantity_update_waits_for_balance_lock(self):
+    def test_stock_movement_update_is_rejected_as_append_only(self):
         balance = self._create_balance()
         movement = self._insert_movement(balance.pk)
 
-        self._run_blocked_race(
-            lambda: InventoryBalance.objects.select_for_update().get(
-                pk=balance.pk
-            ),
-            lambda: StockMovement.objects.filter(
-                pk=movement.pk
-            ).update(
-                quantity=Decimal("2.000")
-            ),
-        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                StockMovement.objects.filter(pk=movement.pk).update(
+                    quantity=Decimal("2.000")
+                )
 
         movement.refresh_from_db()
-        self.assertEqual(movement.quantity, Decimal("2.000"))
+        self.assertEqual(movement.quantity, Decimal("1.000"))
 
     # ---------------------------------------------------------
     # Opposite-direction stock movement reassignment
     # ---------------------------------------------------------
 
-    def test_opposite_direction_movement_reassignments_do_not_deadlock(
-        self,
-    ):
+    def test_stock_movement_balance_reassignment_is_rejected(self):
         balance_a = self._create_balance(self.branch_a)
-        balance_b = self._create_balance(
-            self.alternative_branch
-        )
+        balance_b = self._create_balance(self.alternative_branch)
+        movement = self._insert_movement(balance_a.pk)
 
-        movement_a = self._insert_movement(balance_a.pk)
-        movement_b = self._insert_movement(balance_b.pk)
-
-        barrier = Barrier(2)
-
-        def reassign(movement_id, target_balance_id):
-            barrier.wait(timeout=self.TIMEOUT)
-
-            updated = StockMovement.objects.filter(
-                pk=movement_id
-            ).update(
-                balance_id=target_balance_id
-            )
-
-            if updated != 1:
-                raise AssertionError(
-                    "Expected exactly one stock movement update."
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                StockMovement.objects.filter(pk=movement.pk).update(
+                    balance_id=balance_b.pk
                 )
 
-        started_a = Event()
-        started_b = Event()
+        movement.refresh_from_db()
+        self.assertEqual(movement.balance_id, balance_a.pk)
 
-        worker_a = self._start_worker(
-            lambda: reassign(
-                movement_a.pk,
-                balance_b.pk,
-            ),
-            started=started_a,
-        )
-
-        worker_b = self._start_worker(
-            lambda: reassign(
-                movement_b.pk,
-                balance_a.pk,
-            ),
-            started=started_b,
-        )
-
-        workers = [worker_a, worker_b]
-
-        try:
-            self.assertTrue(
-                started_a.wait(self.TIMEOUT)
-            )
-
-            self.assertTrue(
-                started_b.wait(self.TIMEOUT)
-            )
-
-        finally:
-            for worker in workers:
-                worker["thread"].join(self.TIMEOUT + 2)
-
-        for worker in workers:
-            self.assertFalse(
-                worker["thread"].is_alive(),
-                "Movement transaction did not finish.",
-            )
-            result = worker["result"].get(timeout=1)
-
-            self.assertIsNone(
-                result,
-                f"Movement reassignment failed: {result!r}",
-            )
-
-        # Verify both movements were successfully reassigned.
-        movement_a.refresh_from_db()
-        movement_b.refresh_from_db()
-
-        self.assertEqual(
-            movement_a.balance_id,
-            balance_b.pk,
-        )
-
-        self.assertEqual(
-            movement_b.balance_id,
-            balance_a.pk,
-        )
