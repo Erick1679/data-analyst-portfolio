@@ -36,19 +36,18 @@ Checkpoint CP-DB-02: **CLOSED — MERGED TO MAIN.** See `CP-DB-02.md`.
 
 
 
-## DB-03 — Inventory transaction services (6 steps; planning only)
-1. Inspect existing retail service, permission, audit-event, API, and test conventions; document the relevant interfaces before designing changes — **completed; findings recorded in CP-DB-03**.
-2. Define stock receipt and adjustment invariants, including movement direction, quantity precision, adjustment reasons, and who may perform each operation.
-3. Design atomic balance initialization/update and concurrency control, including safe handling when a branch-product balance does not yet exist.
-4. Define idempotency and duplicate-request behavior; decide how a stock movement and audit event are written consistently with the balance change.
-5. Define historical movement protections and reconciliation behavior; identify which changes are permitted and which require compensating movements.
-6. Specify tests for tenant isolation, authorization, rollback, idempotency, insufficient stock/nonnegative balances, and concurrent updates.
+## DB-03 — Inventory transaction services (6 implementation steps)
 
-Implementation is not authorized yet. After the plan is approved, implement receipt and adjustment services in a separate reviewed change. Sales-driven stock deduction and sale completion remain DB-04 unless the user explicitly changes scope.
+1. Inspect existing retail service, permission, audit-event, API, and test conventions; record the existing interfaces — **completed**.
+2. Approve the inventory authorization, audit actions, mandatory adjustment reasons, append-only history, and seven detailed defaults — **approved 2026-11-06**.
+3. Implement model metadata, reason-code constraints, idempotency key storage, and immutable opening-quantity baseline — **committed to feature branch**.
+4. Implement atomic receipt/adjustment services, balance locking, idempotent replay, audit integration, and read-only reconciliation — **committed to feature branch**.
+5. Implement PostgreSQL migration/backfill/triggers and service, audit, database-integrity, and concurrency regression tests — **committed to feature branch; validation pending**.
+6. Run Django checks, migration forward/reverse/reapply checks, focused PostgreSQL tests, full backend tests, and final branch diff review — **pending**.
 
-Checkpoint CP-DB-03: **ALL SEVEN DETAILED DEFAULTS APPROVED AND IMPLEMENTATION AUTHORIZED 2026-11-06; IMPLEMENTATION AND VALIDATION IN PROGRESS ON `feature/db-03-inventory-transaction-services`.** See `CP-DB-03.md`.
+Implementation is explicitly authorized on `feature/db-03-inventory-transaction-services`. No production migration/deployment, new inventory write API, or DB-04 sales lifecycle work is authorized by this chunk.
 
-
+Checkpoint CP-DB-03: **IMPLEMENTATION IN PROGRESS — CODE AND TESTS COMMITTED; AUTOMATED VALIDATION NOT YET RUN.** See `CP-DB-03.md`.
 
 ## DB-04 — Sales lifecycle (7 steps)
 1. Agree draft/completed/voided/refund/currency rules.
