@@ -183,9 +183,9 @@ def _record_inventory_movement(
     quantity = _validate_inventory_quantity(quantity)
     key = _validate_idempotency_key(idempotency_key)
 
-    if movement_type not in _REASON_CODES:
+    if not isinstance(movement_type, str) or movement_type not in _REASON_CODES:
         raise ValidationError("Unsupported inventory movement type.")
-    if reason_code not in _REASON_CODES[movement_type]:
+    if not isinstance(reason_code, str) or reason_code not in _REASON_CODES[movement_type]:
         raise ValidationError("Reason code is invalid for this movement type.")
 
     branch = Branch.objects.filter(
@@ -317,7 +317,7 @@ def adjust_stock(
     notes="",
 ):
     """Record a positive or negative stock adjustment."""
-    if direction not in {
+    if not isinstance(direction, str) or direction not in {
         StockMovement.MovementType.ADJUSTMENT_IN,
         StockMovement.MovementType.ADJUSTMENT_OUT,
     }:
