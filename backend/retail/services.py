@@ -1,8 +1,15 @@
 """Organization-scoped services for Brights Retail Intelligence."""
 
-from django.core.exceptions import PermissionDenied
+import uuid
+from decimal import Decimal, InvalidOperation
 
-from .models import Branch, Product
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import IntegrityError, connection, transaction
+from django.db.models import F, Sum
+
+from auditlog.services import record_audit_event
+
+from .models import Branch, InventoryBalance, Product, StockMovement
 from .permissions import has_retail_permission
 
 
@@ -44,17 +51,6 @@ def get_organization_branches(user, organization):
 # Inventory transaction services
 # ---------------------------------------------------------------------------
 
-import uuid
-from decimal import Decimal, InvalidOperation
-
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection, transaction
-from django.db.models import F, Sum, Case, When, DecimalField, Value
-from django.db.models.functions import Coalesce
-
-from auditlog.services import record_audit_event
-
-from .models import InventoryBalance, StockMovement
 
 
 class InsufficientStockError(ValidationError):
