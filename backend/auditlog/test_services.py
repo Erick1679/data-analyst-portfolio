@@ -45,6 +45,14 @@ class AuditEventServiceTests(TestCase):
         self.assertEqual(event.outcome, "success")
         self.assertIsNotNone(event.created_at)
 
+    def test_retail_stock_receipt_action_is_allowed(self):
+        event = self.record(action="retail.stock_received")
+        self.assertEqual(event.action, "retail.stock_received")
+
+    def test_retail_stock_adjustment_action_is_allowed(self):
+        event = self.record(action="retail.stock_adjusted")
+        self.assertEqual(event.action, "retail.stock_adjusted")
+
     def test_denied_event_created(self):
         event = self.record(
             action="dataset.creation_denied",
