@@ -6,7 +6,7 @@
 **Repository:** `Erick1679/data-analyst-portfolio`  
 **Base commit:** `4490c129b210a52267d49dfe9eae724d4191f619`  
 **Planning branch:** `feature/db-03-inventory-transaction-services`  
-**Status:** DRAFT — AWAITING USER REVIEW AND EXPLICIT APPROVAL
+**Status:** PLAN APPROVED — DETAILED DESIGN AUTHORIZED; IMPLEMENTATION GATE PENDING
 
 ## 1. Purpose
 
@@ -87,29 +87,39 @@ The current branch was inspected at the DB-03 planning baseline. These findings 
 
 These are proposed criteria; exact business rules must be confirmed before implementation.
 
-## 6. Design questions to resolve before coding
+## 6. Approved decisions — single maintainer approval
 
-- Approve the inventory audit action names (for example, `retail.stock_received` and `retail.stock_adjusted`) to add to the existing audit allowlist?
-- Is the existing `manage_inventory` permission sufficient for receipts and both adjustment directions, or should the role matrix distinguish these operations?
-- Must every adjustment include a controlled reason code, free-text note, external reference, or a combination? The current model has notes/reference but no reason-code field.
-- What durable idempotency contract is required? The current optional `StockMovement.reference` is not unique and must not be treated as an idempotency key without an explicit rule and constraint.
-- Confirm zero is allowed and negative balances are forbidden for all operations; the existing balance check already rejects negative stored balances.
-- Can balances be initialized lazily on first receipt, or must they be pre-created?
-- Should stock movements be append-only at the database level (reject UPDATE/DELETE) with corrections represented only by compensating movements? DB-02 currently locks movement updates/deletes but does not prohibit them.
-- Which existing API surface, if any, should expose these services? Avoid adding endpoints unless the current architecture and product need justify them.
+**Decision:** APPROVED on 2026-11-06 by the project's single maintainer/reviewer. No second reviewer is required.
 
-## 7. Out of scope
+1. **Authorization:** Reuse the existing `manage_inventory` permission for stock receipts, positive adjustments, and negative adjustments. Do not introduce separate role permissions in DB-03.
+2. **Audit actions:** Extend the existing audit allowlist with `retail.stock_received` and `retail.stock_adjusted`. Use the existing `record_audit_event` path; do not create a parallel audit system.
+3. **Adjustment reasons:** Every adjustment must carry a reason code. Notes and external references remain optional. The controlled reason-code vocabulary and storage representation must be specified before coding.
+4. **Movement history:** Enforce append-only stock movements at the database level by rejecting UPDATE and DELETE. Corrections must be recorded as compensating movements, not edits to historical rows.
+
+These decisions authorize detailed DB-03 design. They do not authorize production changes, audit-event pruning, DB-04 sales lifecycle work, or a new inventory API.
+
+## 7. Remaining design questions to resolve before coding
+
+- **Idempotency:** Define a durable request idempotency key, its scope (organization/operation or another explicit boundary), retention/lifetime, duplicate payload behavior, and database uniqueness enforcement. The optional `StockMovement.reference` is not an idempotency key.
+- **Reason-code vocabulary:** Define the allowed receipt/adjustment reason codes, whether receipts also require a reason code, and how the values are validated and stored.
+- **Balance initialization:** Decide whether a missing branch/product balance is created lazily during the first receipt or pre-created by a separate approved workflow. A missing row cannot be protected by a normal row-level `select_for_update()`.
+- **Stock floor:** Zero is allowed and negative balances are forbidden by the existing database check. Define the service behavior and error contract when an outbound adjustment exceeds available stock.
+- **Opening stock and reconciliation:** Define how opening balances enter the ledger so that balance = opening quantity + signed movements can be proven without inventing an untracked starting quantity.
+- **API boundary:** No write endpoint is approved by default. Confirm whether DB-03 is service-only or whether a specific existing API surface is required.
+- **Append-only enforcement details:** Specify trigger behavior for UPDATE/DELETE, migration reversibility, ownership/privilege assumptions, and tests proving that compensating movements remain possible.
+
+## 8. Out of scope
 
 - Sales draft/completion/void/refund lifecycle and sale-driven stock deduction (DB-04).
 - New production database changes or deployment.
 - Audit-event retention/pruning changes.
 - Sustained production-like load testing unless separately planned and approved.
 
-## 8. Files and implementation impact
+## 9. Files and implementation impact
 
 No implementation files are approved or changed by this planning checkpoint. After approval, the exact service, test, and possible migration files will be determined from the repository's existing architecture and recorded before implementation.
 
-## 9. Risks and safeguards
+## 10. Risks and safeguards
 
 - A balance row may not exist when two receipts arrive concurrently; a normal `select_for_update()` alone does not lock a missing row.
 - Balance, movement, and audit writes must share one atomic transaction to avoid ledger drift.
@@ -118,14 +128,8 @@ No implementation files are approved or changed by this planning checkpoint. Aft
 - Movement quantities are positive and movement type carries direction; service arithmetic must consistently add receipt/adjustment-in and subtract adjustment-out. The audit allowlist needs approved retail action codes.
 - DB-02 concurrency tests are evidence for their named scenarios only and do not replace DB-03 service-level concurrency tests.
 
-## 10. Checkpoint decision
+## 11. Checkpoint decision
 
-**Decision:** AWAITING USER.
+**Decision:** APPROVED FOR DETAILED DESIGN on 2026-11-06 by the single maintainer.
 
-Available decisions:
-
-- APPROVE DB-03 PLAN — authorize detailed implementation design and the approved scope above.
-- REQUEST CHANGES — revise the plan before implementation.
-- HOLD — pause the database completion work.
-
-No DB-03 implementation, migration, or production action may begin until the user explicitly approves this checkpoint.
+The four decisions in section 6 are approved. The remaining questions in section 7 must be resolved and documented in a concrete implementation plan before service coding or migrations begin. After that design is complete, pause for the maintainer's implementation authorization.
