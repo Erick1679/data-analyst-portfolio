@@ -85,7 +85,7 @@ The current branch was inspected at the DB-03 planning baseline. These findings 
 | Reconciliation | Balance can be reconciled against opening quantity plus signed movements |
 | Regression | Targeted PostgreSQL tests and relevant retail/backend regressions pass |
 
-These are proposed criteria; exact business rules must be confirmed before implementation.
+These acceptance criteria are approved for DB-03 implementation and verification.
 
 ## 6. Approved decisions — single maintainer approval
 
@@ -96,7 +96,7 @@ These are proposed criteria; exact business rules must be confirmed before imple
 3. **Adjustment reasons:** Every adjustment must carry a reason code. Notes and external references remain optional. The controlled reason-code vocabulary and storage representation must be specified before coding.
 4. **Movement history:** Enforce append-only stock movements at the database level by rejecting UPDATE and DELETE. Corrections must be recorded as compensating movements, not edits to historical rows.
 
-These decisions authorize detailed DB-03 design. They do not authorize production changes, audit-event pruning, DB-04 sales lifecycle work, or a new inventory API.
+These four decisions, together with the seven detailed defaults approved in section 10, authorize DB-03 implementation on the feature branch. They do not authorize production changes, audit-event pruning, DB-04 sales lifecycle work, or a new inventory API.
 
 ## 7. Detailed service and data design
 
@@ -165,7 +165,7 @@ Proposed controlled reason-code vocabulary:
 | `adjustment_out` | `stock_count`, `damage`, `expiry`, `loss`, `internal_use`, `other` | Required |
 | `sale` | blank | DB-04 owns sale-driven movements |
 
-Notes and external references remain optional, as approved. The reference field is descriptive only and is never an idempotency key. The reason-code list is a concrete proposal for maintainer confirmation before implementation; it is not yet a production policy.
+Notes and external references remain optional, as approved. The reference field is descriptive only and is never an idempotency key. The reason-code vocabulary was explicitly approved as a DB-03 implementation default on 2026-11-06. It remains scoped to these inventory services and is not a general-purpose enterprise reason taxonomy.
 
 ### 7.3 Durable idempotency
 
