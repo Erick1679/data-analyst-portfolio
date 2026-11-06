@@ -99,8 +99,7 @@ On the separate PostgreSQL database `brights_migration_rollback_test`:
 - The 628-test full-backend run (623 passed, 5 skipped) was executed before the final trigger/test correction. Current-head GitHub Actions passed the focused PostgreSQL retail validation; the full backend suite was not repeated after that correction.
 - Backup/restore and disaster-recovery procedures were not exercised as part of DB-02.
 - Audit-event pruning was not part of DB-02. Its configuration was not re-audited.
-- DB-03 service design must inspect the existing audit-event model, authorization conventions, API/service layout, and transaction patterns before implementation. Do not assume those interfaces or invent new ones.
-- Missing-balance creation, idempotency semantics, adjustment reasons, and the exact relationship between balance updates, stock movements, and audit events require explicit design and tests.
+- DB-03 implementation and detailed design are recorded in CP-DB-03. Automated validation remains outstanding; do not report DB-03 complete until the migration and test matrix pass.
 
 ## Decisions and constraints
 1. Continue on `feature/brights-database-completion`; do not substitute a commit to `main`.
@@ -114,13 +113,13 @@ On the separate PostgreSQL database `brights_migration_rollback_test`:
 
 ## Current next action
 
-1. Switch the Codespaces working copy from `main` to `feature/db-03-inventory-transaction-services` and verify the clean starting point.
-2. Review `CHUNK_PLAN.md` and the draft `CP-DB-03.md`.
+1. Verify the Codespaces working copy is on `feature/db-03-inventory-transaction-services` and synchronized with the remote implementation commits; this local working-copy state has not been verified by the GitHub connector.
+2. Review `CHUNK_PLAN.md` and `CP-DB-03.md`; both now record the approved defaults and implementation progress.
 3. Inspect existing retail services, permissions, audit-event models, API conventions, and tests; record findings in CP-DB-03 — completed.
 4. Obtain and record approval of inventory authorization, audit-action, adjustment-reason requirement, and append-only-history decisions — **approved 2026-11-06**.
 5. Complete the detailed service, transaction, idempotency, migration, reconciliation, and regression-test design in CP-DB-03 — **completed**.
 6. Obtain approval of all seven detailed defaults and explicit implementation authorization — **approved 2026-11-06**.
-7. Implement DB-03 on the existing feature branch and complete focused PostgreSQL migration, integrity, concurrency, and full backend validation — **in progress**.
+7. Complete Django checks, migration forward/reverse/reapply checks, focused PostgreSQL integrity/concurrency tests, full backend tests, and final diff review — **pending**.
 
 ## Session update protocol
 At each session start, review this file, `CHUNK_PLAN.md`, and the latest checkpoint record. After each verified step, update the date/version, evidence, risks, decisions, and next action. Never mark tests, commits, pushes, or deployment complete unless directly verified.
