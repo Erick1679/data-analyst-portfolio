@@ -98,38 +98,226 @@ These are proposed criteria; exact business rules must be confirmed before imple
 
 These decisions authorize detailed DB-03 design. They do not authorize production changes, audit-event pruning, DB-04 sales lifecycle work, or a new inventory API.
 
-## 7. Remaining design questions to resolve before coding
+## 7. Detailed service and data design
 
-- **Idempotency:** Define a durable request idempotency key, its scope (organization/operation or another explicit boundary), retention/lifetime, duplicate payload behavior, and database uniqueness enforcement. The optional `StockMovement.reference` is not an idempotency key.
-- **Reason-code vocabulary:** Define the allowed receipt/adjustment reason codes, whether receipts also require a reason code, and how the values are validated and stored.
-- **Balance initialization:** Decide whether a missing branch/product balance is created lazily during the first receipt or pre-created by a separate approved workflow. A missing row cannot be protected by a normal row-level `select_for_update()`.
-- **Stock floor:** Zero is allowed and negative balances are forbidden by the existing database check. Define the service behavior and error contract when an outbound adjustment exceeds available stock.
-- **Opening stock and reconciliation:** Define how opening balances enter the ledger so that balance = opening quantity + signed movements can be proven without inventing an untracked starting quantity.
-- **API boundary:** No write endpoint is approved by default. Confirm whether DB-03 is service-only or whether a specific existing API surface is required.
-- **Append-only enforcement details:** Specify trigger behavior for UPDATE/DELETE, migration reversibility, ownership/privilege assumptions, and tests proving that compensating movements remain possible.
+### 7.1 Service boundary and contracts
 
-## 8. Out of scope
+Keep DB-03 service-only. Do not add a write API, URL, serializer, or view in this chunk. This follows the existing retail architecture: function-based services in `retail/services.py`, organization-scoped permission checks, and read-only HTTP endpoints.
 
-- Sales draft/completion/void/refund lifecycle and sale-driven stock deduction (DB-04).
-- New production database changes or deployment.
+Proposed service contracts:
+
+```python
+receive_stock(
+    *,
+    user,
+    organization,
+    branch_id,
+    product_id,
+    quantity,
+    idempotency_key,
+    reason_code="",
+    reference="",
+    notes="",
+)
+
+adjust_stock(
+    *,
+    user,
+    organization,
+    branch_id,
+    product_id,
+    direction,  # adjustment_in or adjustment_out
+    quantity,
+    reason_code,
+    idempotency_key,
+    reference="",
+    notes="",
+)
+```
+
+Both functions return the resulting `StockMovement`. A repeated request with the same key and identical semantic payload returns the original movement and does not write another movement or audit event.
+
+Use Django's existing exception conventions:
+- `PermissionDenied` when the user lacks active `manage_inventory` permission for the supplied organization.
+- `ValidationError` for invalid identifiers, inactive/mismatched branch or product, malformed quantity, unsupported reason code, or idempotency-key reuse with a different payload.
+- A small `InsufficientStockError` domain exception (subclassing `ValidationError`) for an adjustment-out that would make stock negative.
+
+The organization is an explicit service argument. Resolve branch and product with queries scoped to that organization; do not fetch globally and authorize afterward. Reject inactive branches and products. The existing membership helper continues to enforce active user, organization, and membership status.
+
+### 7.2 Quantity and movement semantics
+
+- Accept `Decimal` quantities only; reject binary floats and non-finite values.
+- Quantity must be greater than zero and exactly representable at three decimal places. Do not silently round.
+- Keep movement quantity positive. Movement type determines the signed effect:
+  - `receipt`: add quantity.
+  - `adjustment_in`: add quantity.
+  - `adjustment_out`: subtract quantity.
+  - `sale`: subtract quantity (reserved for DB-04).
+- Zero stock is valid. Negative stock is never valid.
+- Do not change product selling price or currency as part of inventory movement processing.
+
+Proposed controlled reason-code vocabulary:
+
+| Movement type | Allowed reason codes | Requirement |
+|---|---|---|
+| `receipt` | `supplier_delivery`, `customer_return`, `opening_stock`, `other` | Optional; use `opening_stock` for an explicit opening-stock receipt |
+| `adjustment_in` | `stock_count`, `found_stock`, `customer_return`, `other` | Required |
+| `adjustment_out` | `stock_count`, `damage`, `expiry`, `loss`, `internal_use`, `other` | Required |
+| `sale` | blank | DB-04 owns sale-driven movements |
+
+Notes and external references remain optional, as approved. The reference field is descriptive only and is never an idempotency key. The reason-code list is a concrete proposal for maintainer confirmation before implementation; it is not yet a production policy.
+
+### 7.3 Durable idempotency
+
+Use a client-supplied UUID idempotency key on every new stock movement. Add a nullable, unique `StockMovement.idempotency_key` field so historical rows can remain null while a PostgreSQL BEFORE INSERT trigger requires a key for all new rows. A global UUID uniqueness constraint avoids needing to duplicate organization data on the movement row; the service still checks the caller's organization and permission before looking up a key.
+
+- Key lifetime is permanent because the key is stored on the immutable movement; there is no expiry or pruning job.
+- The request fingerprint consists of organization, actor, branch, product, movement type, exact quantity, reason code, reference, and notes.
+- Same key + same fingerprint: return the original movement (idempotent replay).
+- Same key + different fingerprint: raise a generic validation conflict; do not disclose the original movement or its tenant.
+- A replay creates no new movement and no new audit event.
+- Do not infer idempotency from `reference`; it is optional and not unique.
+
+Concurrency algorithm: perform the normal lookup first; if absent, execute the complete operation in one outer `transaction.atomic()`. Create/lock the balance, then insert the movement with the unique key. If two transactions race on the same key, the unique constraint chooses one winner. The losing transaction must roll back completely; after leaving the failed atomic block, fetch the winning movement and compare the full fingerprint. Return it only on an exact match; otherwise raise the conflict. Re-raise unrelated integrity errors. This covers same-key requests aimed at different balances as well as the same balance.
+
+### 7.4 Balance creation, locking, and transaction boundary
+
+Create missing balances lazily at zero using the existing unique constraint on (branch, product) and Django's race-safe `get_or_create()` pattern. Then acquire `select_for_update()` on the balance before checking available stock and inserting the movement. The unique constraint resolves simultaneous first creation; the row lock serializes later operations.
+
+A single DB-03 operation changes one branch/product balance. If a future operation touches multiple balances, lock them in deterministic primary-key order. DB-04 sale completion must follow that rule.
+
+**Use the database movement-insert trigger as the single balance mutator.** The service must not also increment `quantity_on_hand`. DB-02 already locks the balance in the BEFORE INSERT movement trigger. DB-03 adds an AFTER INSERT trigger that applies the signed movement delta to `InventoryBalance.quantity_on_hand` and updates its timestamp. The existing nonnegative check remains the final database guard. The service checks the locked balance first to raise the domain-specific insufficient-stock error; the database constraint protects against direct SQL and unexpected paths.
+
+The following writes must commit or roll back together:
+1. Any new zero-quantity balance row (if this is the first movement).
+2. The stock movement row.
+3. The trigger-maintained balance change.
+4. The success audit event.
+
+If movement insertion, balance update, or audit recording fails, the entire transaction rolls back. Because `record_audit_event()` is already atomic, it participates in the caller's outer transaction.
+
+### 7.5 Audit integration
+
+Extend `auditlog.services.ALLOWED_AUDIT_ACTIONS` with exactly:
+- `retail.stock_received`
+- `retail.stock_adjusted`
+
+Use the existing `record_audit_event()` function with outcome `success`, the organization and actor, target type `retail.StockMovement`, and the movement UUID as target ID. Do not place quantity, notes, reference, or other payload data in the audit event; the existing audit model is intentionally metadata-only.
+
+Record the audit event after movement creation but before the outer transaction commits. A rejected/failed operation must not leave a success audit event. DB-03 does not create a parallel audit mechanism or alter authentication-event retention.
+
+### 7.6 Append-only movement history
+
+Add PostgreSQL BEFORE UPDATE and BEFORE DELETE triggers on `retail_stockmovement` that always raise an integrity exception. Corrections are new compensating movements with a new idempotency key and the appropriate adjustment direction/reason code.
+
+The existing DB-02 movement UPDATE/DELETE lock triggers become unnecessary once writes are prohibited. The DB-03 migration should replace those two triggers with the append-only guards while retaining the existing INSERT balance-lock trigger. The trigger must reject no-op updates too; no field, including actor, quantity, balance, reference, notes, reason code, or idempotency key, is mutable after insertion.
+
+Application-level model methods are not a sufficient protection because queryset updates and direct SQL bypass them. PostgreSQL is the enforcement boundary. Tests must exercise ORM `update()`, ORM `delete()`, and direct SQL.
+
+### 7.7 Opening stock and reconciliation
+
+Add an immutable `InventoryBalance.opening_quantity` Decimal field. During migration, set it to:
+
+`current quantity_on_hand - signed sum of all existing stock movements for that balance`
+
+If the result is negative, stop the migration and require manual investigation; do not silently rewrite historical movements or invent an actor. Add a PostgreSQL trigger preventing later changes to `opening_quantity`.
+
+For new balances, `opening_quantity` defaults to zero. A new initial stock intake is represented by a normal receipt movement with reason code `opening_stock`; it is not written directly into the balance.
+
+The reconciliation equation is:
+
+`quantity_on_hand = opening_quantity + receipts + adjustments_in - adjustments_out - sales`
+
+Build a read-only reconciliation query/helper that reports balance ID, opening quantity, signed movement total, expected quantity, stored quantity, and variance. It must not repair records automatically. A nonzero variance is a blocker for sign-off and requires investigation and a separately authorized compensating operation.
+
+### 7.8 Migration and rollback design
+
+Create one additive migration, proposed name `retail.0004_inventory_transaction_integrity`, after `0003_postgresql_tenant_integrity`.
+
+Planned operations:
+1. Add `reason_code`, nullable unique `idempotency_key`, and `opening_quantity`.
+2. Backfill `opening_quantity` using the reconciliation formula above.
+3. Fail with actionable IDs if any pre-existing adjustment movement lacks a reason code; classify those records explicitly before retrying the migration.
+4. Add check constraints for valid movement types, reason-code/movement-type combinations, and nonnegative opening quantity.
+5. Replace the DB-02 movement UPDATE/DELETE lock triggers with append-only guards; retain INSERT locking.
+6. Install the idempotency/reason-code INSERT guard, the AFTER INSERT balance-application trigger, and the opening-quantity immutability trigger.
+7. Add a reverse guard as the final migration operation so it executes first during rollback. If any post-migration movement has an idempotency key or new reason-code data, refuse reversal rather than silently discarding operational history. A clean, unused migration can be reversed and reapplied in the disposable migration-test database.
+
+The migration is PostgreSQL-specific, additive, and safely reversible only before DB-03 movement data is written. No production migration is authorized by this design.
+
+## 8. Implementation file plan
+
+Subject to the final approval gate:
+
+| File | Planned change |
+|---|---|
+| `backend/retail/models.py` | Add reason-code choices, idempotency key, and immutable opening quantity metadata/constraints |
+| `backend/retail/services.py` | Add receipt/adjustment services and read-only reconciliation helper, following existing function-based conventions |
+| `backend/auditlog/services.py` | Add the two approved retail audit action names |
+| `backend/retail/migrations/0004_inventory_transaction_integrity.py` | Add fields, safe baseline backfill, constraints, and PostgreSQL triggers |
+| `backend/retail/test_services.py` or a focused `test_inventory_services.py` | Test service contracts, authorization, validation, atomicity, audit, idempotency, and reconciliation |
+| `backend/retail/test_db_integrity.py` | Test append-only, reason/idempotency guards, trigger-maintained balances, and opening-quantity immutability; replace DB-02 tests that expected movement updates to succeed |
+| `backend/auditlog/test_services.py` | Test acceptance of the two retail actions and continued rejection of unsupported actions |
+| Focused PostgreSQL concurrency test module | Test simultaneous first receipt, concurrent receipts/adjustments, duplicate idempotency keys, and lock behavior |
+
+No API/view/URL files are planned for DB-03. No DB-04 sales lifecycle implementation is included.
+
+## 9. Requirements-to-test matrix
+
+| Requirement | Required regression evidence |
+|---|---|
+| Tenant scope | Own-organization branch/product succeeds; cross-organization and inactive records rejected |
+| Authorization | Owner/admin/manager/editor can manage; analyst/auditor/viewer, outsider, inactive user, inactive membership, and inactive organization are denied |
+| Quantity | Zero, negative, float, NaN/infinity, and more than three decimal places rejected; valid three-decimal values accepted |
+| Receipt | Receipt movement and trigger-maintained balance increase commit together |
+| Adjustments | Both directions require a valid direction-specific reason code; in adds and out subtracts |
+| Stock floor | Adjustment-out above available quantity raises the domain error and leaves balance/movement/audit unchanged |
+| Atomicity | Forced movement, trigger, or audit failure rolls back the complete operation |
+| Lazy creation | Concurrent first receipts create exactly one balance and preserve the total quantity |
+| Existing balance concurrency | Concurrent operations serialize and final balance equals opening quantity plus signed movements |
+| Idempotency replay | Same key and same payload returns one movement, one balance effect, and one audit event |
+| Idempotency conflict | Same key with different actor, tenant, product, quantity, reason, or other payload is rejected with no second effect |
+| Append-only | ORM and direct SQL UPDATE/DELETE fail; compensating INSERT succeeds |
+| Opening baseline | Migration backfill produces a nonnegative baseline; negative baseline or unclassified legacy adjustment aborts safely |
+| Reconciliation | Exact expected/stored match passes; deliberate variance is reported without automatic repair |
+| Audit | Only approved action names are accepted; audit and inventory changes share one transaction |
+| Migration | Clean forward, reverse-before-use, reapply, trigger catalog, and migration consistency checks pass |
+| Regression | Focused PostgreSQL tests, retail suite, then full backend suite pass |
+
+Concurrency tests must use PostgreSQL `TransactionTestCase`, separate worker connections, barriers/timeouts, and database-observed lock behavior, consistent with DB-02. They demonstrate the named scenarios only; they are not a substitute for sustained load testing.
+
+## 10. Proposed defaults requiring maintainer confirmation
+
+The approved four decisions remain unchanged. The following detailed choices are recommended for implementation but have not yet been separately approved:
+
+1. Adopt the reason-code vocabulary in section 7.2, including the direction-specific allowed values.
+2. Lazily create a missing branch/product balance at zero on the first receipt or adjustment-in. The first operation still requires a positive movement; no opening quantity is silently seeded.
+3. Use a globally unique UUID idempotency key with permanent retention and exact-payload replay semantics.
+4. Use `opening_quantity` as the immutable cutover baseline and fail migration if it would be negative or if legacy adjustment rows are unclassified.
+5. Apply movement deltas in a PostgreSQL AFTER INSERT trigger so the database is the single balance mutator; services must never update the balance separately.
+6. Reject inactive branches and products for new movements.
+7. Keep DB-03 service-only; do not add a write API.
+
+## 11. Risks and safeguards
+
+- The migration may be blocked by existing unclassified adjustment movements or inconsistent historical balance data. Inspect and report those records before retrying; do not silently invent reasons or actors.
+- The append-only rule intentionally changes DB-02 behavior: tests that previously demonstrated successful movement UPDATE/reassignment must be replaced with rejection tests. The balance itself remains the mutable current-state projection.
+- Direct manual edits to `quantity_on_hand` can create a reconciliation variance; restrict operational writes to the approved service/database path and run the read-only reconciliation check.
+- Unique idempotency keys are permanent. Clients must generate a fresh UUID for a genuinely new operation and reuse the same key only for retries of the same request.
+- The movement-insert trigger applies `sale` deltas too; DB-04 must use the same service/database contract and deterministic multi-balance lock ordering.
+- No sustained stress test, production deployment, backup/restore exercise, or production database inspection is included.
+
+## 12. Out of scope
+
+- Sales draft/completion/void/refund lifecycle and sale-driven stock deduction service/API (DB-04).
+- Production database changes or deployment.
 - Audit-event retention/pruning changes.
+- New inventory write endpoints.
+- Automatic reconciliation repairs.
 - Sustained production-like load testing unless separately planned and approved.
 
-## 9. Files and implementation impact
+## 13. Checkpoint decision
 
-No implementation files are approved or changed by this planning checkpoint. After approval, the exact service, test, and possible migration files will be determined from the repository's existing architecture and recorded before implementation.
+**Decision:** DETAILED DESIGN COMPLETE — AWAITING MAINTAINER REVIEW AND IMPLEMENTATION AUTHORIZATION.
 
-## 10. Risks and safeguards
-
-- A balance row may not exist when two receipts arrive concurrently; a normal `select_for_update()` alone does not lock a missing row.
-- Balance, movement, and audit writes must share one atomic transaction to avoid ledger drift.
-- Retry handling without a durable idempotency rule can double-apply stock.
-- Authorization must be checked against the organization and branch on every operation.
-- Movement quantities are positive and movement type carries direction; service arithmetic must consistently add receipt/adjustment-in and subtract adjustment-out. The audit allowlist needs approved retail action codes.
-- DB-02 concurrency tests are evidence for their named scenarios only and do not replace DB-03 service-level concurrency tests.
-
-## 11. Checkpoint decision
-
-**Decision:** APPROVED FOR DETAILED DESIGN on 2026-11-06 by the single maintainer.
-
-The four decisions in section 6 are approved. The remaining questions in section 7 must be resolved and documented in a concrete implementation plan before service coding or migrations begin. After that design is complete, pause for the maintainer's implementation authorization.
+The four decisions in section 6 are approved. The concrete design, proposed defaults, migration plan, file plan, and acceptance matrix are now recorded. No DB-03 implementation, migration, or production action may begin until the maintainer confirms the proposed defaults and explicitly authorizes implementation.
