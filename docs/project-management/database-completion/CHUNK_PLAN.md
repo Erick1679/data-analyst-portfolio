@@ -30,19 +30,25 @@ Evidence:
 - Reapplication restored 10 triggers and 8 functions.
 - Development database has all retail migrations applied, all 10 triggers enabled, and no pending migrations.
 
-Latest branch corrections: commit `d8852e14ebe631ca8c0e9dd2488f8878453aa386` broadens the stock-movement update trigger to every update; commit `4ccd7187d54fa20b0945b3e6c825b2fff5c8ff7e` adds a quantity-only update lock regression test. The current PR head is `da91e0997125197dce1574b888f17a7bc2eebcab`; GitHub reports 15 commits ahead of `main` and 0 behind. GitHub Actions `Brights Backend CI` run 17 (`42279260160`) passed on that exact head. Its `Django Retail PostgreSQL Tests` job passed Django configuration, migration consistency, and the PostgreSQL retail test step. The earlier 628-test full-backend result was on the original implementation head and was not repeated after the trigger/test corrections. The preceding run 15 (`42278737927`) passed 133 PostgreSQL tests on earlier head `6fb9e7897fcaf1aa228f4bbd8553faaa62b15594`.
+**Merge record:** PR #8 was squash-merged into `main` on 2026-11-06. The verified merge commit is `4490c129b210a52267d49dfe9eae724d4191f619`. The user verified local `main` and `origin/main` both point to this SHA and the working tree is clean.
 
-Checkpoint CP-DB-02: **Technical validation and nine-file maintainer self-review complete; awaiting the single maintainer's merge decision.** This project has no second reviewer. The PR author cannot submit a GitHub approving review on their own PR, so the self-review is recorded separately and is not a GitHub `APPROVED` review. Verify branch-protection requirements before merging. See `CP-DB-02.md`.
+Checkpoint CP-DB-02: **CLOSED — MERGED TO MAIN.** See `CP-DB-02.md`.
 
-## DB-03 — Inventory transaction services (6 steps)
-1. Define stock, authorization, and balance invariants.
-2. Implement atomic receipt and adjustment services.
-3. Lock balances and safely initialize missing balances.
-4. Record stock movements and audit events in the same transaction.
-5. Protect historical movements and balance reconciliation.
-6. Test permissions, rollback, idempotency, and concurrency.
 
-Checkpoint CP-DB-03 acceptance target: Demonstrate no overselling or inconsistent movement ledger under tested scenarios. User approval required.
+
+## DB-03 — Inventory transaction services (6 steps; planning only)
+1. Inspect existing retail service, permission, audit-event, API, and test conventions; document the relevant interfaces before designing changes.
+2. Define stock receipt and adjustment invariants, including movement direction, quantity precision, adjustment reasons, and who may perform each operation.
+3. Design atomic balance initialization/update and concurrency control, including safe handling when a branch-product balance does not yet exist.
+4. Define idempotency and duplicate-request behavior; decide how a stock movement and audit event are written consistently with the balance change.
+5. Define historical movement protections and reconciliation behavior; identify which changes are permitted and which require compensating movements.
+6. Specify tests for tenant isolation, authorization, rollback, idempotency, insufficient stock/nonnegative balances, and concurrent updates.
+
+Implementation is not authorized yet. After the plan is approved, implement receipt and adjustment services in a separate reviewed change. Sales-driven stock deduction and sale completion remain DB-04 unless the user explicitly changes scope.
+
+Checkpoint CP-DB-03: **DRAFT — AWAITING USER REVIEW AND EXPLICIT APPROVAL.** See `CP-DB-03.md`.
+
+
 
 ## DB-04 — Sales lifecycle (7 steps)
 1. Agree draft/completed/voided/refund/currency rules.
