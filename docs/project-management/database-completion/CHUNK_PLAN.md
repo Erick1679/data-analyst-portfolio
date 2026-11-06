@@ -30,7 +30,9 @@ Evidence:
 - Reapplication restored 10 triggers and 8 functions.
 - Development database has all retail migrations applied, all 10 triggers enabled, and no pending migrations.
 
-Checkpoint CP-DB-02: **Technically validated; awaiting user review and explicit approval.** See `CP-DB-02.md`.
+Latest branch correction: commit `d8852e14ebe631ca8c0e9dd2488f8878453aa386` broadens the stock-movement update trigger to every update; commit `4ccd7187d54fa20b0945b3e6c825b2fff5c8ff7e` adds a quantity-only update lock regression test. GitHub Actions `Brights Backend CI` run 9 (`42276709488`) passed on the latest head: Django check passed, migration consistency reported no changes, and 133 PostgreSQL tests passed. The earlier 628-test full-backend result was on the earlier implementation head and was not repeated after these two corrections.
+
+Checkpoint CP-DB-02: **Technical validation complete; final nine-file PR review and approval pending.** See `CP-DB-02.md`.
 
 ## DB-03 — Inventory transaction services (6 steps)
 1. Define stock, authorization, and balance invariants.
