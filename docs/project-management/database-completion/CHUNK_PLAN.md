@@ -37,7 +37,7 @@ Checkpoint CP-DB-02: **CLOSED — MERGED TO MAIN.** See `CP-DB-02.md`.
 
 
 ## DB-03 — Inventory transaction services (6 steps; planning only)
-1. Inspect existing retail service, permission, audit-event, API, and test conventions; document the relevant interfaces before designing changes.
+1. Inspect existing retail service, permission, audit-event, API, and test conventions; document the relevant interfaces before designing changes — **completed; findings recorded in CP-DB-03**.
 2. Define stock receipt and adjustment invariants, including movement direction, quantity precision, adjustment reasons, and who may perform each operation.
 3. Design atomic balance initialization/update and concurrency control, including safe handling when a branch-product balance does not yet exist.
 4. Define idempotency and duplicate-request behavior; decide how a stock movement and audit event are written consistently with the balance change.
@@ -46,7 +46,7 @@ Checkpoint CP-DB-02: **CLOSED — MERGED TO MAIN.** See `CP-DB-02.md`.
 
 Implementation is not authorized yet. After the plan is approved, implement receipt and adjustment services in a separate reviewed change. Sales-driven stock deduction and sale completion remain DB-04 unless the user explicitly changes scope.
 
-Checkpoint CP-DB-03: **DRAFT — AWAITING USER REVIEW AND EXPLICIT APPROVAL.** See `CP-DB-03.md`.
+Checkpoint CP-DB-03: **DRAFT — REPOSITORY REVIEW COMPLETE; AWAITING USER REVIEW AND EXPLICIT APPROVAL.** See `CP-DB-03.md`.
 
 
 
