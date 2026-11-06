@@ -72,103 +72,117 @@ def noop_reverse_backfill(apps, schema_editor):
     pass
 
 
-INSTALL_SQL = """
-DROP TRIGGER IF EXISTS retail_stockmovement_update_lock ON retail_stockmovement;
-DROP TRIGGER IF EXISTS retail_stockmovement_delete_lock ON retail_stockmovement;
-
-CREATE FUNCTION retail_reject_stockmovement_mutation()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RAISE EXCEPTION 'Stock movements are append-only; record a compensating movement'
-        USING ERRCODE = '23514';
-END;
-$$;
-
-CREATE TRIGGER retail_stockmovement_no_update
-BEFORE UPDATE ON retail_stockmovement
-FOR EACH ROW
-EXECUTE FUNCTION retail_reject_stockmovement_mutation();
-
-CREATE TRIGGER retail_stockmovement_no_delete
-BEFORE DELETE ON retail_stockmovement
-FOR EACH ROW
-EXECUTE FUNCTION retail_reject_stockmovement_mutation();
-
-CREATE FUNCTION retail_require_stockmovement_idempotency()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF NEW.idempotency_key IS NULL THEN
-        RAISE EXCEPTION 'New stock movements require an idempotency key'
+INSTALL_STATEMENTS = (
+    """
+    DROP TRIGGER IF EXISTS retail_stockmovement_update_lock ON retail_stockmovement;
+    """,
+    """
+    DROP TRIGGER IF EXISTS retail_stockmovement_delete_lock ON retail_stockmovement;
+    """,
+    """
+    CREATE FUNCTION retail_reject_stockmovement_mutation()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        RAISE EXCEPTION 'Stock movements are append-only; record a compensating movement'
             USING ERRCODE = '23514';
-    END IF;
-    RETURN NEW;
-END;
-$$;
+    END;
+    $$;
+    """,
+    """
+    CREATE TRIGGER retail_stockmovement_no_update
+    BEFORE UPDATE ON retail_stockmovement
+    FOR EACH ROW
+    EXECUTE FUNCTION retail_reject_stockmovement_mutation();
+    """,
+    """
+    CREATE TRIGGER retail_stockmovement_no_delete
+    BEFORE DELETE ON retail_stockmovement
+    FOR EACH ROW
+    EXECUTE FUNCTION retail_reject_stockmovement_mutation();
+    """,
+    """
+    CREATE FUNCTION retail_require_stockmovement_idempotency()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        IF NEW.idempotency_key IS NULL THEN
+            RAISE EXCEPTION 'New stock movements require an idempotency key'
+                USING ERRCODE = '23514';
+        END IF;
+        RETURN NEW;
+    END;
+    $$;
+    """,
+    """
+    CREATE TRIGGER retail_stockmovement_idempotency_required
+    BEFORE INSERT ON retail_stockmovement
+    FOR EACH ROW
+    EXECUTE FUNCTION retail_require_stockmovement_idempotency();
+    """,
+    """
+    CREATE FUNCTION retail_apply_stockmovement_to_balance()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+        signed_quantity numeric(16, 3);
+    BEGIN
+        IF NEW.movement_type IN ('receipt', 'adjustment_in') THEN
+            signed_quantity := NEW.quantity;
+        ELSE
+            signed_quantity := -NEW.quantity;
+        END IF;
 
-CREATE TRIGGER retail_stockmovement_idempotency_required
-BEFORE INSERT ON retail_stockmovement
-FOR EACH ROW
-EXECUTE FUNCTION retail_require_stockmovement_idempotency();
+        UPDATE retail_inventorybalance
+        SET quantity_on_hand = quantity_on_hand + signed_quantity,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = NEW.balance_id;
 
-CREATE FUNCTION retail_apply_stockmovement_to_balance()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    signed_quantity numeric(16, 3);
-BEGIN
-    IF NEW.movement_type IN ('receipt', 'adjustment_in') THEN
-        signed_quantity := NEW.quantity;
-    ELSE
-        signed_quantity := -NEW.quantity;
-    END IF;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Stock movement inventory balance does not exist'
+                USING ERRCODE = '23503';
+        END IF;
 
-    UPDATE retail_inventorybalance
-    SET quantity_on_hand = quantity_on_hand + signed_quantity,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = NEW.balance_id;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Stock movement inventory balance does not exist'
-            USING ERRCODE = '23503';
-    END IF;
-
-    RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER retail_stockmovement_apply_balance
-AFTER INSERT ON retail_stockmovement
-FOR EACH ROW
-EXECUTE FUNCTION retail_apply_stockmovement_to_balance();
-
-CREATE FUNCTION retail_protect_opening_quantity()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF NEW.opening_quantity IS DISTINCT FROM OLD.opening_quantity THEN
-        RAISE EXCEPTION 'Inventory opening quantity is immutable'
-            USING ERRCODE = '23514';
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER retail_inventory_opening_immutable
-BEFORE UPDATE OF opening_quantity ON retail_inventorybalance
-FOR EACH ROW
-EXECUTE FUNCTION retail_protect_opening_quantity();
-"""
+        RETURN NEW;
+    END;
+    $$;
+    """,
+    """
+    CREATE TRIGGER retail_stockmovement_apply_balance
+    AFTER INSERT ON retail_stockmovement
+    FOR EACH ROW
+    EXECUTE FUNCTION retail_apply_stockmovement_to_balance();
+    """,
+    """
+    CREATE FUNCTION retail_protect_opening_quantity()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        IF NEW.opening_quantity IS DISTINCT FROM OLD.opening_quantity THEN
+            RAISE EXCEPTION 'Inventory opening quantity is immutable'
+                USING ERRCODE = '23514';
+        END IF;
+        RETURN NEW;
+    END;
+    $$;
+    """,
+    """
+    CREATE TRIGGER retail_inventory_opening_immutable
+    BEFORE UPDATE OF opening_quantity ON retail_inventorybalance
+    FOR EACH ROW
+    EXECUTE FUNCTION retail_protect_opening_quantity();
+    """,
+)
 
 
 def install_inventory_transaction_integrity(apps, schema_editor):
     if schema_editor.connection.vendor == "postgresql":
-        schema_editor.execute(INSTALL_SQL)
+        for statement in INSTALL_STATEMENTS:
+            schema_editor.execute(statement)
 
 
 def uninstall_inventory_transaction_integrity(apps, schema_editor):
