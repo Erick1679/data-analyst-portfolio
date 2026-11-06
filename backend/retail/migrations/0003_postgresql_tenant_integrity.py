@@ -314,7 +314,7 @@ EXECUTE FUNCTION retail_lock_inventorybalance_for_movement();
 
 STOCKMOVEMENT_UPDATE_TRIGGER_SQL = """
 CREATE TRIGGER retail_stockmovement_update_lock
-BEFORE UPDATE OF balance_id
+BEFORE UPDATE
 ON retail_stockmovement
 FOR EACH ROW
 EXECUTE FUNCTION retail_lock_inventorybalance_for_movement();
