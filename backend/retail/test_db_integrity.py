@@ -470,6 +470,86 @@ class RetailDatabaseIntegrityTests(TestCase):
         balance.refresh_from_db()
         self.assertEqual(balance.product_id, alternative_product.pk)
 
+    def test_stock_movement_delete_is_rejected(self):
+        balance = InventoryBalance.objects.create(
+            branch=self.branch_a,
+            product=self.product_a,
+            quantity_on_hand=Decimal("0.000"),
+        )
+        movement = StockMovement.objects.create(
+            balance=balance,
+            movement_type=StockMovement.MovementType.RECEIPT,
+            quantity=Decimal("1.000"),
+            recorded_by=self.user,
+            idempotency_key=uuid.uuid4(),
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                StockMovement.objects.filter(pk=movement.pk).delete()
+
+        self.assertTrue(StockMovement.objects.filter(pk=movement.pk).exists())
+
+    def test_stock_movement_direct_sql_update_and_delete_are_rejected(self):
+        balance = InventoryBalance.objects.create(
+            branch=self.branch_a,
+            product=self.product_a,
+            quantity_on_hand=Decimal("0.000"),
+        )
+        movement = StockMovement.objects.create(
+            balance=balance,
+            movement_type=StockMovement.MovementType.RECEIPT,
+            quantity=Decimal("1.000"),
+            recorded_by=self.user,
+            idempotency_key=uuid.uuid4(),
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "UPDATE retail_stockmovement SET notes = %s WHERE id = %s",
+                        ["tampered", str(movement.pk)],
+                    )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "DELETE FROM retail_stockmovement WHERE id = %s",
+                        [str(movement.pk)],
+                    )
+
+        self.assertTrue(StockMovement.objects.filter(pk=movement.pk).exists())
+
+    def test_stock_movement_insert_requires_idempotency_key(self):
+        balance = InventoryBalance.objects.create(
+            branch=self.branch_a,
+            product=self.product_a,
+            quantity_on_hand=Decimal("0.000"),
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                StockMovement.objects.create(
+                    balance=balance,
+                    movement_type=StockMovement.MovementType.RECEIPT,
+                    quantity=Decimal("1.000"),
+                    recorded_by=self.user,
+                )
+
+    def test_opening_quantity_is_immutable(self):
+        balance = InventoryBalance.objects.create(
+            branch=self.branch_a,
+            product=self.product_a,
+            quantity_on_hand=Decimal("0.000"),
+            opening_quantity=Decimal("0.000"),
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                InventoryBalance.objects.filter(pk=balance.pk).update(
+                    opening_quantity=Decimal("1.000")
+                )
+
     def test_inventory_quantity_update_with_movements_is_allowed(self):
         balance = InventoryBalance.objects.create(
             branch=self.branch_a,
