@@ -509,7 +509,7 @@ class RetailDatabaseIntegrityTests(TestCase):
                 with connection.cursor() as cursor:
                     cursor.execute(
                         "UPDATE retail_stockmovement SET notes = %s WHERE id = %s",
-                        ["tampered", str(movement.pk)],
+                        ["tampered", movement.pk],
                     )
 
         with self.assertRaises(IntegrityError):
@@ -517,7 +517,7 @@ class RetailDatabaseIntegrityTests(TestCase):
                 with connection.cursor() as cursor:
                     cursor.execute(
                         "DELETE FROM retail_stockmovement WHERE id = %s",
-                        [str(movement.pk)],
+                        [movement.pk],
                     )
 
         self.assertTrue(StockMovement.objects.filter(pk=movement.pk).exists())
