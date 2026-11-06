@@ -97,3 +97,56 @@ class InventoryIdempotencyConcurrencyTests(TransactionTestCase):
             product=self.product,
         )
         self.assertEqual(balance.quantity_on_hand, Decimal("4.000"))
+    def test_concurrent_first_receipts_with_distinct_keys_preserve_total(self):
+        barrier = Barrier(2)
+        results = Queue()
+        quantities = (Decimal("3.000"), Decimal("5.000"))
+
+        def worker(quantity):
+            try:
+                close_old_connections()
+                user = get_user_model().objects.get(pk=self.user.pk)
+                organization = Organization.objects.get(pk=self.organization.pk)
+                barrier.wait(timeout=self.TIMEOUT)
+                movement = receive_stock(
+                    user=user,
+                    organization=organization,
+                    branch_id=self.branch.pk,
+                    product_id=self.product.pk,
+                    quantity=quantity,
+                    idempotency_key=uuid.uuid4(),
+                    reason_code="supplier_delivery",
+                )
+                results.put(("ok", movement.pk))
+            except BaseException as exc:
+                results.put(("error", exc))
+            finally:
+                close_old_connections()
+
+        workers = [
+            Thread(target=worker, args=(quantity,), daemon=True)
+            for quantity in quantities
+        ]
+        for thread in workers:
+            thread.start()
+        for thread in workers:
+            thread.join(self.TIMEOUT + 2)
+
+        for thread in workers:
+            self.assertFalse(thread.is_alive(), "Inventory worker did not finish.")
+
+        outcomes = [results.get(timeout=1) for _ in workers]
+        self.assertTrue(
+            all(outcome[0] == "ok" for outcome in outcomes),
+            repr(outcomes),
+        )
+        self.assertEqual(StockMovement.objects.count(), 2)
+        self.assertEqual(AuditEvent.objects.filter(
+            action="retail.stock_received"
+        ).count(), 2)
+        balance = InventoryBalance.objects.get(
+            branch=self.branch,
+            product=self.product,
+        )
+        self.assertEqual(balance.quantity_on_hand, Decimal("8.000"))
+
