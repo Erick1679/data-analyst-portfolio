@@ -5,12 +5,12 @@
 **Chunk:** DB-03 — Inventory transaction services  
 **Repository:** `Erick1679/data-analyst-portfolio`  
 **Base commit:** `4490c129b210a52267d49dfe9eae724d4191f619`  
-**Planning branch:** `feature/db-03-inventory-transaction-services`  
+**Implementation branch:** `feature/db-03-inventory-transaction-services`  
 **Status:** IMPLEMENTATION IN PROGRESS — AUTHORIZED BY MAINTAINER ON 2026-11-06
 
 ## 1. Purpose
 
-Plan the service layer for safe inventory receipts and adjustments using the existing retail schema and PostgreSQL integrity protections. This checkpoint records the approved detailed design and active implementation on the existing feature branch. No production migration or deployment is authorized.
+Record the approved detailed design and implementation progress for safe inventory receipts and adjustments using the existing retail schema and PostgreSQL integrity protections. This checkpoint records the approved detailed design and active implementation on the existing feature branch. No production migration or deployment is authorized.
 
 ## 2. Proposed scope
 
