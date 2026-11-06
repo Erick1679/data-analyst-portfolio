@@ -19,6 +19,8 @@ ALLOWED_AUDIT_ACTIONS = frozenset({
     "dataset.grant_revoked",
     "dataset.grant_reactivated",
     "membership.changed",
+    "retail.stock_received",
+    "retail.stock_adjusted",
 })
 
 ALLOWED_OUTCOMES = frozenset({
