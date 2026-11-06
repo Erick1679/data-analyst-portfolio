@@ -1,13 +1,34 @@
 # The Brights Analytics — Database Completion State
 
-Updated: 2026-11-06. State version: 2.4.
+Updated: 2026-11-06. State version: 2.5.
 Repository: `Erick1679/data-analyst-portfolio`.
 Base branch: `main`.
-Current working branch for DB-03 planning: `feature/db-03-inventory-transaction-services` (created from the verified merged main commit).
-Current chunk: DB-03 — Inventory transaction services (planning only).
-Checkpoint: CP-DB-03 — detailed inventory transaction design completed and recorded; awaiting maintainer confirmation of proposed defaults and explicit implementation authorization.
+Current working branch for DB-03 implementation: `feature/db-03-inventory-transaction-services` (created from the verified merged main commit).
+Current chunk: DB-03 — Inventory transaction services (implementation in progress).
+Checkpoint: CP-DB-03 — maintainer approved all seven detailed design defaults and explicitly authorized implementation on 2026-11-06; implementation and validation in progress.
 
-> Source-control note: PR #8 was squash-merged into `main`. The verified squash commit is `4490c129b210a52267d49dfe9eae724d4191f619`. The user confirmed that Codespaces fast-forwarded local `main` to this exact SHA, that `origin/main` matched it, and that `git status --short --branch` showed a clean `main...origin/main` working tree. A new remote planning branch, `feature/db-03-inventory-transaction-services`, has been created from that merged commit. The Codespaces terminal has not yet switched to this new branch. This update records planning and design approval only: no DB-03 service implementation, migration, or production change has been made.
+> Source-control note: PR #8 was squash-merged into `main`. The verified squash commit is `4490c129b210a52267d49dfe9eae724d4191f619`. The user confirmed that Codespaces fast-forwarded local `main` to this exact SHA, that `origin/main` matched it, and that `git status --short --branch` showed a clean `main...origin/main` working tree. A new remote planning branch, `feature/db-03-inventory-transaction-services`, has been created from that merged commit. The Codespaces terminal has not yet switched to this new branch. The maintainer subsequently approved all seven detailed defaults and explicitly authorized DB-03 implementation on this remote feature branch. Initial implementation commits have been made. Production migration/deployment remain unauthorized and no production change has been made.
+
+## DB-03 — Inventory transaction services (implementation in progress)
+
+Maintainer approval:
+- The four initial DB-03 decisions were approved on 2026-11-06.
+- All seven detailed implementation defaults were explicitly approved and implementation authorized on 2026-11-06.
+
+Remote feature-branch implementation committed:
+- Retail model metadata: immutable opening quantity, reason-code choices, and unique idempotency UUID.
+- Receipt and adjustment service functions with tenant-scoped permission checks, quantity validation, locked balances, duplicate-request replay, and audit events.
+- Audit allowlist additions: `retail.stock_received` and `retail.stock_adjusted`.
+- Additive migration `retail.0004_inventory_transaction_integrity` with opening-quantity backfill, append-only movement triggers, required idempotency keys, trigger-maintained balance deltas, and opening-quantity protection.
+- Service, database-integrity, audit, and concurrent-idempotency regression tests.
+
+Validation still required:
+- Run Django system checks and `makemigrations --check`.
+- Run migration forward/reverse/reapply on disposable PostgreSQL with clean historical fixture data.
+- Run focused retail/audit tests, PostgreSQL integrity/concurrency tests, then the full backend suite.
+- Review the complete branch diff and resolve any failures before declaring DB-03 complete.
+
+No production migration, deployment, or DB-04 sales lifecycle change is authorized or performed.
 
 ## Verified completed
 
@@ -97,8 +118,9 @@ On the separate PostgreSQL database `brights_migration_rollback_test`:
 2. Review `CHUNK_PLAN.md` and the draft `CP-DB-03.md`.
 3. Inspect existing retail services, permissions, audit-event models, API conventions, and tests; record findings in CP-DB-03 — completed.
 4. Obtain and record approval of inventory authorization, audit-action, adjustment-reason requirement, and append-only-history decisions — **approved 2026-11-06**.
-5. Complete the detailed service, transaction, idempotency, migration, reconciliation, and regression-test design in CP-DB-03 — **completed; proposed defaults await maintainer confirmation**.
-6. Pause for explicit implementation authorization before changing service code or creating migrations.
+5. Complete the detailed service, transaction, idempotency, migration, reconciliation, and regression-test design in CP-DB-03 — **completed**.
+6. Obtain approval of all seven detailed defaults and explicit implementation authorization — **approved 2026-11-06**.
+7. Implement DB-03 on the existing feature branch and complete focused PostgreSQL migration, integrity, concurrency, and full backend validation — **in progress**.
 
 ## Session update protocol
 At each session start, review this file, `CHUNK_PLAN.md`, and the latest checkpoint record. After each verified step, update the date/version, evidence, risks, decisions, and next action. Never mark tests, commits, pushes, or deployment complete unless directly verified.
