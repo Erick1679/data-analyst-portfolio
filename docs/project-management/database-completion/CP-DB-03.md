@@ -25,7 +25,40 @@ Plan the service layer for safe inventory receipts and adjustments using the exi
 
 Sales completion and sale-driven stock deduction remain DB-04 unless the user explicitly approves a scope change.
 
-## 3. Planning sequence
+## 3. Repository architecture findings
+
+The current branch was inspected at the DB-03 planning baseline. These findings describe the existing implementation; they do not authorize changes.
+
+### Retail services and authorization
+- `backend/retail/services.py` currently contains organization-scoped read services for products and branches. There are no inventory receipt or adjustment write services yet.
+- Services are function-based. Existing service functions raise Django `PermissionDenied` when authorization fails.
+- `backend/retail/permissions.py` defines `manage_inventory` for the owner, admin, manager, and editor roles. It delegates active-user, active-organization, and active-membership checks to `datasets.permissions.get_active_membership`.
+- The existing retail HTTP views expose read-only GET endpoints. There is no inventory write endpoint. Service implementation should be separated from any API decision; a new endpoint is not automatically required by this chunk.
+- The existing role matrix grants one broad `manage_inventory` permission. It does not distinguish receipt, positive adjustment, and negative adjustment permissions. Do not invent a finer role split without a product/security decision.
+
+### Existing inventory data model
+- `InventoryBalance` is unique per branch/product pair, stores `quantity_on_hand` as a three-decimal Decimal with default zero, and has a database check preventing negative balances.
+- `StockMovement` stores a positive three-decimal quantity; `movement_type` expresses receipt, sale, adjustment-in, or adjustment-out direction. It also stores `recorded_by`, optional `reference`, optional `notes`, and creation time.
+- The movement's balance and actor foreign keys use `PROTECT`. The optional `reference` has no uniqueness constraint and is not a safe idempotency key by itself.
+- There is no existing idempotency-key field/model, no stock adjustment reason-code field, and no ledger-to-balance reconciliation constraint.
+
+### PostgreSQL protections already present
+- DB-02 enforces branch/product tenant consistency and a unique branch/product balance.
+- The stock-movement insert, update, and delete triggers lock the associated inventory balance. Movement updates lock the old/new balance rows in deterministic ID order.
+- These triggers provide locking; they do not make movement rows append-only. Existing SQL protections do not prohibit changing or deleting a movement, so immutable history would need an explicit service and/or database enforcement design.
+
+### Audit-event integration
+- `AuditEvent` records organization, nullable actor, action, outcome, target type, target ID, and timestamp. It intentionally does not store arbitrary payloads or quantity snapshots.
+- `auditlog.services.record_audit_event` is the existing approved write path. It validates inputs and is wrapped in `transaction.atomic`; when called inside an outer inventory transaction, its nested atomic block participates in that transaction.
+- The current `ALLOWED_AUDIT_ACTIONS` allowlist contains dataset and membership actions only. Inventory-specific action names must be deliberately added and tested before the inventory service can record them; otherwise the audit service rejects them.
+- Existing audit tests verify rejection of unsupported actions, so adding approved retail action codes needs focused positive and negative regression coverage.
+
+### Test conventions
+- Retail has separate service, permission, API, database-integrity, and concurrency test modules.
+- The DB-integrity concurrency tests use PostgreSQL `TransactionTestCase`, worker threads, separate database connections, and controlled barriers/timeouts. DB-03 should follow the established pattern for service-level races.
+- The existing retail service tests use Django `TestCase` for organization-scoped service behavior.
+
+## 4. Planning sequence
 
 1. Inspect the existing retail app structure: services, selectors, views/API endpoints, permissions, and test conventions.
 2. Inspect the audit-event model and existing audit-writing mechanism. Identify required fields and transaction behavior; do not invent a parallel audit system.
@@ -35,7 +68,7 @@ Sales completion and sale-driven stock deduction remain DB-04 unless the user ex
 6. Define immutable-history and reconciliation rules. Prefer compensating movements over editing/deleting historical records where appropriate; verify this against existing product requirements.
 7. Prepare a requirements-to-tests matrix and implementation file plan for user review.
 
-## 4. Proposed acceptance criteria
+## 5. Proposed acceptance criteria
 
 | Area | Acceptance evidence required |
 |---|---|
@@ -54,38 +87,38 @@ Sales completion and sale-driven stock deduction remain DB-04 unless the user ex
 
 These are proposed criteria; exact business rules must be confirmed before implementation.
 
-## 5. Design questions to resolve before coding
+## 6. Design questions to resolve before coding
 
-- Which existing audit-event model/service must receive the inventory audit event, and which fields are mandatory?
-- Which roles/permissions can receive stock, make positive adjustments, and make negative adjustments?
-- Must every adjustment include a reason code, free-text note, reference, or some combination?
-- What is the idempotency contract for API retries and client-generated request identifiers?
-- Is a zero balance allowed? Are negative balances categorically forbidden?
+- Approve the inventory audit action names (for example, `retail.stock_received` and `retail.stock_adjusted`) to add to the existing audit allowlist?
+- Is the existing `manage_inventory` permission sufficient for receipts and both adjustment directions, or should the role matrix distinguish these operations?
+- Must every adjustment include a controlled reason code, free-text note, external reference, or a combination? The current model has notes/reference but no reason-code field.
+- What durable idempotency contract is required? The current optional `StockMovement.reference` is not unique and must not be treated as an idempotency key without an explicit rule and constraint.
+- Confirm zero is allowed and negative balances are forbidden for all operations; the existing balance check already rejects negative stored balances.
 - Can balances be initialized lazily on first receipt, or must they be pre-created?
-- Are corrections to historical movements prohibited, with all corrections represented by compensating movements?
+- Should stock movements be append-only at the database level (reject UPDATE/DELETE) with corrections represented only by compensating movements? DB-02 currently locks movement updates/deletes but does not prohibit them.
 - Which existing API surface, if any, should expose these services? Avoid adding endpoints unless the current architecture and product need justify them.
 
-## 6. Out of scope
+## 7. Out of scope
 
 - Sales draft/completion/void/refund lifecycle and sale-driven stock deduction (DB-04).
 - New production database changes or deployment.
 - Audit-event retention/pruning changes.
 - Sustained production-like load testing unless separately planned and approved.
 
-## 7. Files and implementation impact
+## 8. Files and implementation impact
 
 No implementation files are approved or changed by this planning checkpoint. After approval, the exact service, test, and possible migration files will be determined from the repository's existing architecture and recorded before implementation.
 
-## 8. Risks and safeguards
+## 9. Risks and safeguards
 
 - A balance row may not exist when two receipts arrive concurrently; a normal `select_for_update()` alone does not lock a missing row.
 - Balance, movement, and audit writes must share one atomic transaction to avoid ledger drift.
 - Retry handling without a durable idempotency rule can double-apply stock.
 - Authorization must be checked against the organization and branch on every operation.
-- The current schema has stock movement types for receipt, sale, and adjustments, but the sign convention and audit contract must be explicitly confirmed.
+- Movement quantities are positive and movement type carries direction; service arithmetic must consistently add receipt/adjustment-in and subtract adjustment-out. The audit allowlist needs approved retail action codes.
 - DB-02 concurrency tests are evidence for their named scenarios only and do not replace DB-03 service-level concurrency tests.
 
-## 9. Checkpoint decision
+## 10. Checkpoint decision
 
 **Decision:** AWAITING USER.
 
