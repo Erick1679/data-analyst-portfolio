@@ -157,6 +157,7 @@ def _get_idempotent_replay(*, key, fingerprint):
     return existing
 
 
+@transaction.atomic
 def _record_inventory_movement(
     *,
     user,
@@ -188,12 +189,14 @@ def _record_inventory_movement(
     if not isinstance(reason_code, str) or reason_code not in _REASON_CODES[movement_type]:
         raise ValidationError("Reason code is invalid for this movement type.")
 
-    branch = Branch.objects.filter(
+    # Lock tenant-owned reference rows in a consistent order so a branch
+    # or product cannot be deactivated/reassigned during this operation.
+    branch = Branch.objects.select_for_update().filter(
         pk=branch_id,
         organization=organization,
         is_active=True,
     ).first()
-    product = Product.objects.filter(
+    product = Product.objects.select_for_update().filter(
         pk=product_id,
         organization=organization,
         is_active=True,
