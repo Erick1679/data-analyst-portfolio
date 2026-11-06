@@ -272,6 +272,13 @@ class InventoryBalance(models.Model):
         related_name="inventory_balances",
     )
 
+    opening_quantity = models.DecimalField(
+        max_digits=16,
+        decimal_places=3,
+        default=0,
+        editable=False,
+    )
+
     quantity_on_hand = models.DecimalField(
         max_digits=16,
         decimal_places=3,
@@ -289,6 +296,10 @@ class InventoryBalance(models.Model):
             models.CheckConstraint(
                 condition=Q(quantity_on_hand__gte=0),
                 name="retail_inventory_nonnegative_balance",
+            ),
+            models.CheckConstraint(
+                condition=Q(opening_quantity__gte=0),
+                name="retail_inventory_opening_nonnegative",
             ),
         ]
 
@@ -319,6 +330,18 @@ class StockMovement(models.Model):
         ADJUSTMENT_IN = "adjustment_in", "Positive Adjustment"
         ADJUSTMENT_OUT = "adjustment_out", "Negative Adjustment"
 
+    class ReasonCode(models.TextChoices):
+        SUPPLIER_DELIVERY = "supplier_delivery", "Supplier delivery"
+        CUSTOMER_RETURN = "customer_return", "Customer return"
+        OPENING_STOCK = "opening_stock", "Opening stock"
+        STOCK_COUNT = "stock_count", "Stock count"
+        FOUND_STOCK = "found_stock", "Found stock"
+        DAMAGE = "damage", "Damage"
+        EXPIRY = "expiry", "Expiry"
+        LOSS = "loss", "Loss"
+        INTERNAL_USE = "internal_use", "Internal use"
+        OTHER = "other", "Other"
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -342,6 +365,20 @@ class StockMovement(models.Model):
         validators=[MinValueValidator(0.001)],
     )
 
+    reason_code = models.CharField(
+        max_length=32,
+        choices=[("", "Not specified"), *ReasonCode.choices],
+        blank=True,
+        default="",
+    )
+
+    idempotency_key = models.UUIDField(
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
+    )
+
     recorded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -363,6 +400,42 @@ class StockMovement(models.Model):
             models.CheckConstraint(
                 condition=Q(quantity__gt=0),
                 name="retail_stockmovement_positive_qty",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(
+                        movement_type="receipt",
+                        reason_code__in=[
+                            "",
+                            "supplier_delivery",
+                            "customer_return",
+                            "opening_stock",
+                            "other",
+                        ],
+                    )
+                    | Q(
+                        movement_type="adjustment_in",
+                        reason_code__in=[
+                            "stock_count",
+                            "found_stock",
+                            "customer_return",
+                            "other",
+                        ],
+                    )
+                    | Q(
+                        movement_type="adjustment_out",
+                        reason_code__in=[
+                            "stock_count",
+                            "damage",
+                            "expiry",
+                            "loss",
+                            "internal_use",
+                            "other",
+                        ],
+                    )
+                    | Q(movement_type="sale", reason_code="")
+                ),
+                name="retail_stockmovement_reason_valid",
             ),
         ]
 
