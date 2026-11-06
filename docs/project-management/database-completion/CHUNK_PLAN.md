@@ -30,9 +30,9 @@ Evidence:
 - Reapplication restored 10 triggers and 8 functions.
 - Development database has all retail migrations applied, all 10 triggers enabled, and no pending migrations.
 
-Latest branch corrections: commit `d8852e14ebe631ca8c0e9dd2488f8878453aa386` broadens the stock-movement update trigger to every update; commit `4ccd7187d54fa20b0945b3e6c825b2fff5c8ff7e` adds a quantity-only update lock regression test. Documentation reconciliation brought the current PR head to `6fb9e7897fcaf1aa228f4bbd8553faaa62b15594`. GitHub Actions `Brights Backend CI` run 15 (`42278737927`) passed on that head: Django check passed, migration consistency reported no changes, and 133 PostgreSQL tests passed. The earlier 628-test full-backend result was on the earlier implementation head and was not repeated after these two corrections.
+Latest branch corrections: commit `d8852e14ebe631ca8c0e9dd2488f8878453aa386` broadens the stock-movement update trigger to every update; commit `4ccd7187d54fa20b0945b3e6c825b2fff5c8ff7e` adds a quantity-only update lock regression test. The current PR head is `da91e0997125197dce1574b888f17a7bc2eebcab`; GitHub reports 15 commits ahead of `main` and 0 behind. GitHub Actions `Brights Backend CI` run 17 (`42279260160`) passed on that exact head. Its `Django Retail PostgreSQL Tests` job passed Django configuration, migration consistency, and the PostgreSQL retail test step. The earlier 628-test full-backend result was on the original implementation head and was not repeated after the trigger/test corrections. The preceding run 15 (`42278737927`) passed 133 PostgreSQL tests on earlier head `6fb9e7897fcaf1aa228f4bbd8553faaa62b15594`.
 
-Checkpoint CP-DB-02: **Technical validation and nine-file review complete; awaiting approval from an eligible reviewer who is not the PR author.** See `CP-DB-02.md`.
+Checkpoint CP-DB-02: **Technical validation and nine-file maintainer self-review complete; awaiting the single maintainer's merge decision.** This project has no second reviewer. The PR author cannot submit a GitHub approving review on their own PR, so the self-review is recorded separately and is not a GitHub `APPROVED` review. Verify branch-protection requirements before merging. See `CP-DB-02.md`.
 
 ## DB-03 — Inventory transaction services (6 steps)
 1. Define stock, authorization, and balance invariants.
