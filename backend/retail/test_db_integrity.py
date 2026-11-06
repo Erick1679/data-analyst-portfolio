@@ -880,6 +880,28 @@ class RetailConcurrencyTests(TransactionTestCase):
         )
 
     # ---------------------------------------------------------
+    # Stock movement updates must lock their inventory balance
+    # ---------------------------------------------------------
+
+    def test_movement_quantity_update_waits_for_balance_lock(self):
+        balance = self._create_balance()
+        movement = self._insert_movement(balance.pk)
+
+        self._run_blocked_race(
+            lambda: InventoryBalance.objects.select_for_update().get(
+                pk=balance.pk
+            ),
+            lambda: StockMovement.objects.filter(
+                pk=movement.pk
+            ).update(
+                quantity=Decimal("2.000")
+            ),
+        )
+
+        movement.refresh_from_db()
+        self.assertEqual(movement.quantity, Decimal("2.000"))
+
+    # ---------------------------------------------------------
     # Opposite-direction stock movement reassignment
     # ---------------------------------------------------------
 
