@@ -1,11 +1,11 @@
 # The Brights Analytics — Database Completion State
 
-Updated: 2026-11-06. State version: 2.3.
+Updated: 2026-11-06. State version: 2.4.
 Repository: `Erick1679/data-analyst-portfolio`.
 Base branch: `main`.
 Current working branch for DB-03 planning: `feature/db-03-inventory-transaction-services` (created from the verified merged main commit).
 Current chunk: DB-03 — Inventory transaction services (planning only).
-Checkpoint: CP-DB-03 — four design decisions approved by the single maintainer on 2026-11-06; detailed design in progress, implementation not yet authorized.
+Checkpoint: CP-DB-03 — detailed inventory transaction design completed and recorded; awaiting maintainer confirmation of proposed defaults and explicit implementation authorization.
 
 > Source-control note: PR #8 was squash-merged into `main`. The verified squash commit is `4490c129b210a52267d49dfe9eae724d4191f619`. The user confirmed that Codespaces fast-forwarded local `main` to this exact SHA, that `origin/main` matched it, and that `git status --short --branch` showed a clean `main...origin/main` working tree. A new remote planning branch, `feature/db-03-inventory-transaction-services`, has been created from that merged commit. The Codespaces terminal has not yet switched to this new branch. This update records planning and design approval only: no DB-03 service implementation, migration, or production change has been made.
 
@@ -96,8 +96,8 @@ On the separate PostgreSQL database `brights_migration_rollback_test`:
 1. Switch the Codespaces working copy from `main` to `feature/db-03-inventory-transaction-services` and verify the clean starting point.
 2. Review `CHUNK_PLAN.md` and the draft `CP-DB-03.md`.
 3. Inspect existing retail services, permissions, audit-event models, API conventions, and tests; record findings in CP-DB-03 — completed.
-4. Obtain and record approval of the inventory authorization, audit-action, adjustment-reason, and append-only-history decisions — **approved 2026-11-06**.
-5. Resolve idempotency, reason-code vocabulary, missing-balance initialization, opening-stock/reconciliation, stock-floor behavior, and API boundary; document the implementation/test matrix.
+4. Obtain and record approval of inventory authorization, audit-action, adjustment-reason requirement, and append-only-history decisions — **approved 2026-11-06**.
+5. Complete the detailed service, transaction, idempotency, migration, reconciliation, and regression-test design in CP-DB-03 — **completed; proposed defaults await maintainer confirmation**.
 6. Pause for explicit implementation authorization before changing service code or creating migrations.
 
 ## Session update protocol
