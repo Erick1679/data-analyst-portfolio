@@ -336,8 +336,13 @@ def adjust_stock(
     )
 
 
-def reconcile_inventory_balances(*, organization):
+def reconcile_inventory_balances(*, user, organization):
     """Return read-only expected-versus-stored inventory quantities."""
+    if not has_retail_permission(user, organization, "view_retail"):
+        raise PermissionDenied(
+            "You do not have permission to view inventory in this organization."
+        )
+
     balances = (
         InventoryBalance.objects.filter(
             branch__organization=organization,
