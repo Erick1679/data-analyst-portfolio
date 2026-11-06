@@ -6,11 +6,11 @@
 **Repository:** `Erick1679/data-analyst-portfolio`  
 **Base commit:** `4490c129b210a52267d49dfe9eae724d4191f619`  
 **Planning branch:** `feature/db-03-inventory-transaction-services`  
-**Status:** PLAN APPROVED — DETAILED DESIGN AUTHORIZED; IMPLEMENTATION GATE PENDING
+**Status:** IMPLEMENTATION IN PROGRESS — AUTHORIZED BY MAINTAINER ON 2026-11-06
 
 ## 1. Purpose
 
-Plan the service layer for safe inventory receipts and adjustments using the existing retail schema and PostgreSQL integrity protections. This checkpoint is a planning artifact only; no DB-03 service implementation or migration has started.
+Plan the service layer for safe inventory receipts and adjustments using the existing retail schema and PostgreSQL integrity protections. This checkpoint records the approved detailed design and active implementation on the existing feature branch. No production migration or deployment is authorized.
 
 ## 2. Proposed scope
 
@@ -247,7 +247,7 @@ The migration is PostgreSQL-specific, additive, and safely reversible only befor
 
 ## 8. Implementation file plan
 
-Subject to the final approval gate:
+Implementation is authorized. The following files are being updated on the existing feature branch:
 
 | File | Planned change |
 |---|---|
@@ -286,9 +286,9 @@ No API/view/URL files are planned for DB-03. No DB-04 sales lifecycle implementa
 
 Concurrency tests must use PostgreSQL `TransactionTestCase`, separate worker connections, barriers/timeouts, and database-observed lock behavior, consistent with DB-02. They demonstrate the named scenarios only; they are not a substitute for sustained load testing.
 
-## 10. Proposed defaults requiring maintainer confirmation
+## 10. Approved detailed implementation defaults
 
-The approved four decisions remain unchanged. The following detailed choices are recommended for implementation but have not yet been separately approved:
+The maintainer explicitly approved all seven defaults on 2026-11-06. These are implementation requirements:
 
 1. Adopt the reason-code vocabulary in section 7.2, including the direction-specific allowed values.
 2. Lazily create a missing branch/product balance at zero on the first receipt or adjustment-in. The first operation still requires a positive movement; no opening quantity is silently seeded.
@@ -316,8 +316,8 @@ The approved four decisions remain unchanged. The following detailed choices are
 - Automatic reconciliation repairs.
 - Sustained production-like load testing unless separately planned and approved.
 
-## 13. Checkpoint decision
+## 13. Implementation checkpoint
 
-**Decision:** DETAILED DESIGN COMPLETE — AWAITING MAINTAINER REVIEW AND IMPLEMENTATION AUTHORIZATION.
+**Decision:** IMPLEMENTATION AUTHORIZED — WORK IN PROGRESS ON THE EXISTING FEATURE BRANCH.
 
-The four decisions in section 6 are approved. The concrete design, proposed defaults, migration plan, file plan, and acceptance matrix are now recorded. No DB-03 implementation, migration, or production action may begin until the maintainer confirms the proposed defaults and explicitly authorizes implementation.
+The maintainer approved all seven detailed defaults and explicitly authorized implementation on `feature/db-03-inventory-transaction-services`. Initial implementation commits now cover model metadata, receipt/adjustment services, audit actions, migration triggers, and regression tests. Automated test execution, migration validation, and final diff review remain outstanding. Production migration and deployment remain out of scope and are not authorized.
