@@ -169,6 +169,51 @@ class InventoryTransactionServiceTests(TestCase):
             receive_stock(**self.request(user=self.viewer))
         self.assertEqual(StockMovement.objects.count(), 0)
 
+    def test_cross_organization_branch_and_product_are_rejected(self):
+        other = Organization.objects.create(
+            name="Other Inventory Organization",
+            slug="other-inventory-organization",
+        )
+        other_branch = Branch.objects.create(
+            organization=other,
+            code="MAIN",
+            name="Other Branch",
+        )
+        other_product = Product.objects.create(
+            organization=other,
+            sku="OTHER-001",
+            name="Other Product",
+            unit_price=Decimal("15.00"),
+        )
+        with self.assertRaises(ValidationError):
+            receive_stock(**self.request(
+                branch_id=other_branch.pk,
+                product_id=other_product.pk,
+            ))
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_adjustment_reason_code_is_mandatory_and_direction_specific(self):
+        with self.assertRaises(ValidationError):
+            adjust_stock(
+                **self.request(),
+                direction=StockMovement.MovementType.ADJUSTMENT_OUT,
+                reason_code="",
+            )
+        with self.assertRaises(ValidationError):
+            adjust_stock(
+                **self.request(),
+                direction=StockMovement.MovementType.ADJUSTMENT_OUT,
+                reason_code=StockMovement.ReasonCode.FOUND_STOCK,
+            )
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_inactive_product_is_rejected(self):
+        self.product.is_active = False
+        self.product.save(update_fields=["is_active"])
+        with self.assertRaises(ValidationError):
+            receive_stock(**self.request())
+        self.assertEqual(StockMovement.objects.count(), 0)
+
     def test_inactive_branch_is_rejected(self):
         self.branch.is_active = False
         self.branch.save(update_fields=["is_active"])
