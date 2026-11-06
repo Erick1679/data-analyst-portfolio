@@ -46,7 +46,7 @@ Checkpoint CP-DB-02: **CLOSED — MERGED TO MAIN.** See `CP-DB-02.md`.
 
 Implementation is not authorized yet. After the plan is approved, implement receipt and adjustment services in a separate reviewed change. Sales-driven stock deduction and sale completion remain DB-04 unless the user explicitly changes scope.
 
-Checkpoint CP-DB-03: **DETAILED DESIGN COMPLETE — PROPOSED DEFAULTS AWAITING MAINTAINER CONFIRMATION; IMPLEMENTATION NOT YET AUTHORIZED.** See `CP-DB-03.md`.
+Checkpoint CP-DB-03: **ALL SEVEN DETAILED DEFAULTS APPROVED AND IMPLEMENTATION AUTHORIZED 2026-11-06; IMPLEMENTATION AND VALIDATION IN PROGRESS ON `feature/db-03-inventory-transaction-services`.** See `CP-DB-03.md`.
 
 
 
