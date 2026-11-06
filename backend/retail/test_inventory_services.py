@@ -144,6 +144,26 @@ class InventoryTransactionServiceTests(TestCase):
         self.assertEqual(AuditEvent.objects.count(), 0)
         self.assertFalse(InventoryBalance.objects.exists())
 
+    def test_inventory_management_role_matrix(self):
+        User = get_user_model()
+        allowed_roles = {"admin", "manager", "editor"}
+        denied_roles = {"analyst", "auditor"}
+
+        for role in allowed_roles | denied_roles:
+            user = User.objects.create_user(username=f"inventory_role_{role}")
+            OrganizationMembership.objects.create(
+                organization=self.organization,
+                user=user,
+                role=role,
+            )
+            request = self.request(user=user)
+            if role in allowed_roles:
+                movement = receive_stock(**request)
+                self.assertIsNotNone(movement.pk)
+            else:
+                with self.assertRaises(PermissionDenied):
+                    receive_stock(**request)
+
     def test_viewer_cannot_manage_inventory(self):
         with self.assertRaises(PermissionDenied):
             receive_stock(**self.request(user=self.viewer))
