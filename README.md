@@ -1,4 +1,4 @@
-# Erick Omondi — Data Analytics and Security Portfolio
+# Erick Omondi: Data Analytics and Security Portfolio
 
 A responsive static website showcasing **six technical projects** in data analytics, business intelligence, and security intelligence, plus **two deployed Streamlit dashboards**. The portfolio website itself is a separate GitHub Pages project.
 
