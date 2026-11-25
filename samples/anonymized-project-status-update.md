@@ -2,7 +2,7 @@
 
 **Project:** Education Operations Platform (anonymized)  
 **Reporting period:** Weekly delivery update  
-**Overall status:** Amber — delivery is progressing; final readiness depends on integration checks and stakeholder review.
+**Overall status:** Amber - delivery is progressing; final readiness depends on integration checks and stakeholder review.
 
 ## Executive summary
 
